@@ -18,13 +18,20 @@
 html,body{height:100%}
 body{background:var(--sky);color:var(--ink);font-family:"Iowan Old Style","Palatino Linotype",Georgia,serif;
   padding-top:var(--safe-t);display:flex;flex-direction:column}
-header{padding:18px 18px 10px}
+header{padding:18px 18px 8px}
 h1{font-size:28px;font-weight:600;letter-spacing:.5px;display:flex;align-items:center;gap:10px}
 h1::before{content:"";width:26px;height:10px;border:2px solid var(--gold);border-radius:50%;box-shadow:0 0 12px var(--halo)}
 .search{margin-top:12px;display:flex;gap:8px}
 input[type=search]{flex:1;padding:12px 14px;border-radius:12px;border:1px solid var(--line);
   background:var(--cloud);color:var(--ink);font:inherit;font-size:16px}
 input:focus-visible,button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.modes{display:flex;gap:6px;margin-top:10px}
+.modes button,.chips button{border:1px solid var(--line);background:var(--cloud);color:var(--ink);font:inherit;font-size:14px;
+  padding:7px 12px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.modes button.on,.chips button.on{background:var(--gold);border-color:var(--gold);color:#fff}
+.chips{display:none;gap:6px;margin-top:8px;overflow-x:auto;padding-bottom:4px}
+.chips.show{display:flex}
+#note{color:var(--mute);font-size:13px;margin-top:8px}
 #list{flex:1;overflow-y:auto;padding:4px 12px 16px}
 .hint{color:var(--mute);padding:8px 6px;font-size:14px}
 .row{display:flex;gap:12px;align-items:center;width:100%;text-align:left;padding:8px;border:0;border-radius:12px;
@@ -56,9 +63,15 @@ input[type=range]{flex:1;accent-color:var(--gold);height:28px}
 <header>
   <h1>Ангел</h1>
   <form class="search" id="f"><input id="q" type="search" placeholder="Исполнитель или трек" autocomplete="off"></form>
+  <div class="modes">
+    <button id="m-audius" class="on">Полные треки</button>
+    <button id="m-apple">Хиты мира</button>
+  </div>
+  <div class="chips" id="chips"></div>
+  <div id="note"></div>
 </header>
 
-<div id="list"><div class="hint">Загружаю популярное…</div></div>
+<div id="list"><div class="hint">Загружаю…</div></div>
 
 <footer>
   <div class="now"><img id="art" alt=""><div style="min-width:0"><b id="title">Ничего не играет</b><span id="artist">Выберите трек из списка</span></div></div>
@@ -77,52 +90,92 @@ input[type=range]{flex:1;accent-color:var(--gold);height:28px}
 
 <script>
 const tg = window.Telegram?.WebApp; tg?.ready(); tg?.expand();
-const HOST = "https://discoveryprovider.audius.co/v1";  // публичный каталог Audius
-const APP = "Angel";
+const AUD = "https://discoveryprovider.audius.co/v1", APP = "Angel";
+const COUNTRIES = [["ru","Россия"],["us","США"],["es","Испания"],["mx","Мексика"],["br","Бразилия"],
+  ["fr","Франция"],["de","Германия"],["it","Италия"],["tr","Турция"],["kr","Корея"]];
 const $ = id => document.getElementById(id);
 const a = $("a");
-let tracks = [], idx = -1;
+let src = "audius", cc = "ru", tracks = [], idx = -1;
 
 const fmt = s => { s = Math.max(0, s|0); return (s/60|0) + ":" + String(s%60).padStart(2,"0"); };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const getJSON = async u => { const r = await fetch(u); if(!r.ok) throw new Error(r.status); return r.json(); };
 
-async function load(url){
-  $("list").innerHTML = '<div class="hint">Ищу…</div>';
-  try{
-    const r = await fetch(url); const j = await r.json();
-    tracks = j.data || [];
-    render();
-  }catch(e){ $("list").innerHTML = '<div class="hint">Не удалось загрузить. Проверьте интернет и повторите.</div>'; }
+const fromAudius = t => ({ title:t.title, artist:t.user?.name||"", dur:t.duration,
+  art:t.artwork?.["150x150"]||"", art2:t.artwork?.["480x480"]||t.artwork?.["150x150"]||"",
+  url:`${AUD}/tracks/${t.id}/stream?app_name=${APP}` });
+const fromApple = r => ({ title:r.trackName, artist:r.artistName, dur:30,
+  art:r.artworkUrl100||"", art2:(r.artworkUrl100||"").replace("100x100","600x600"), url:r.previewUrl });
+
+async function fetchTracks(query){
+  if(src === "audius"){
+    const u = query ? `${AUD}/tracks/search?query=${encodeURIComponent(query)}&limit=40&app_name=${APP}`
+                    : `${AUD}/tracks/trending?limit=40&app_name=${APP}`;
+    return (await getJSON(u)).data.map(fromAudius);
+  }
+  if(query){
+    const j = await getJSON(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=music&entity=song&limit=40&country=${cc}`);
+    return j.results.filter(r => r.previewUrl).map(fromApple);
+  }
+  // чарт выбранной страны: сначала список, потом ссылки на отрывки
+  const feed = await getJSON(`https://rss.applemarketingtools.com/api/v2/${cc}/music/most-played/50/songs.json`);
+  const ids = feed.feed.results.map(x => x.id);
+  const look = await getJSON(`https://itunes.apple.com/lookup?id=${ids.join(",")}&country=${cc}`);
+  const byId = {}; look.results.forEach(r => byId[String(r.trackId)] = r);
+  return ids.map(id => byId[id]).filter(r => r && r.previewUrl).map(fromApple);
 }
-const trending = () => load(`${HOST}/tracks/trending?limit=40&app_name=${APP}`);
-const search = q => load(`${HOST}/tracks/search?query=${encodeURIComponent(q)}&limit=40&app_name=${APP}`);
+
+async function go(query){
+  $("list").innerHTML = '<div class="hint">Загружаю…</div>';
+  try{ tracks = await fetchTracks(query); idx = -1; render(); }
+  catch(e){ $("list").innerHTML = '<div class="hint">Не удалось загрузить. Проверьте интернет и попробуйте ещё раз.</div>'; }
+}
 
 function render(){
   if(!tracks.length){ $("list").innerHTML = '<div class="hint">Ничего не найдено. Попробуйте другой запрос.</div>'; return; }
   $("list").innerHTML = tracks.map((t,i)=>`
     <button class="row ${i===idx?"on":""}" data-i="${i}">
-      <img src="${esc(t.artwork?.["150x150"]||"")}" alt="">
-      <div class="t"><b>${esc(t.title)}</b><span>${esc(t.user?.name||"")}</span></div>
-      <span>${fmt(t.duration)}</span>
+      <img src="${esc(t.art)}" alt="">
+      <div class="t"><b>${esc(t.title)}</b><span>${esc(t.artist)}</span></div>
+      <span>${fmt(t.dur)}</span>
     </button>`).join("");
 }
+
+function setMode(m){
+  src = m;
+  $("m-audius").classList.toggle("on", m==="audius");
+  $("m-apple").classList.toggle("on", m==="apple");
+  $("chips").classList.toggle("show", m==="apple");
+  $("note").textContent = m==="apple"
+    ? "Мировые хиты: отрывки по 30 секунд. Выберите страну или найдите исполнителя."
+    : "Полные треки независимых исполнителей.";
+  go($("q").value.trim());
+}
+function drawChips(){
+  $("chips").innerHTML = COUNTRIES.map(([c,n]) => `<button data-c="${c}" class="${c===cc?"on":""}">${n}</button>`).join("");
+}
+$("chips").addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b) return;
+  cc = b.dataset.c; drawChips(); go($("q").value.trim());
+});
+$("m-audius").onclick = () => setMode("audius");
+$("m-apple").onclick  = () => setMode("apple");
 
 function play(i){
   if(i<0||i>=tracks.length) return;
   idx = i; const t = tracks[i];
-  a.src = `${HOST}/tracks/${t.id}/stream?app_name=${APP}`;
-  a.play().catch(()=>{});
-  $("title").textContent = t.title; $("artist").textContent = t.user?.name||"";
-  $("art").src = t.artwork?.["150x150"]||"";
+  a.src = t.url; a.play().catch(()=>{});
+  $("title").textContent = t.title; $("artist").textContent = t.artist;
+  $("art").src = t.art;
   if("mediaSession" in navigator){
-    navigator.mediaSession.metadata = new MediaMetadata({title:t.title, artist:t.user?.name||"",
-      artwork:[{src:t.artwork?.["480x480"]||t.artwork?.["150x150"]||"", sizes:"480x480"}]});
+    navigator.mediaSession.metadata = new MediaMetadata({title:t.title, artist:t.artist,
+      artwork:[{src:t.art2||t.art, sizes:"480x480"}]});
   }
   render();
 }
 
 $("list").addEventListener("click", e => { const r = e.target.closest(".row"); if(r) play(+r.dataset.i); });
-$("f").addEventListener("submit", e => { e.preventDefault(); const q=$("q").value.trim(); q? search(q) : trending(); $("q").blur(); });
+$("f").addEventListener("submit", e => { e.preventDefault(); go($("q").value.trim()); $("q").blur(); });
 
 $("pp").onclick = () => { if(!a.src){ if(tracks.length) play(0); return; } a.paused ? a.play() : a.pause(); };
 $("prev").onclick = () => play(idx-1);
@@ -149,7 +202,7 @@ if("mediaSession" in navigator){
   m.setActionHandler("play",()=>a.play()); m.setActionHandler("pause",()=>a.pause());
   m.setActionHandler("previoustrack",()=>play(idx-1)); m.setActionHandler("nexttrack",()=>play(idx+1));
 }
-trending();
+drawChips(); setMode("audius");
 </script>
 </body>
 </html>
