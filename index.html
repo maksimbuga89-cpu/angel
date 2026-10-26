@@ -153,7 +153,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
 </section>
 
 <script>
-const CLIENT_ID = "c00ddc3c_JAMENDO_CLIENT_ID";
+const CLIENT_ID = "c00ddc3c";
 const API = "https://api.jamendo.com/v3.0/tracks/";
 const GENRES = [["Популярное",""],["Электроника","electronic"],["Рок","rock"],["Хип-хоп","hiphop"],
   ["Поп","pop"],["Лоу-фай","lofi"],["Джаз","jazz"],["Классика","classical"],["Эмбиент","ambient"]];
@@ -188,11 +188,15 @@ async function load(q = "", genre = ""){
     const r = await fetch(API + "?" + p, {signal: AbortSignal.timeout(10000)});
     if (!r.ok) throw new Error(r.status);
     const data = await r.json();
+    if (data.headers && data.headers.status === "failed") throw new Error("jamendo: " + (data.headers.error_message || "failed"));
     queue = (data.results || []).filter(t => t.audio);
     idx = -1;
     render();
   } catch (e) {
-    $("list").innerHTML = '<p class="note">Не удалось загрузить музыку.<br>Проверь интернет и нажми на жанр ещё раз.</p>';
+    const badKey = CLIENT_ID.startsWith("ВСТАВЬ") || /jamendo/i.test(e.message);
+    $("list").innerHTML = badKey
+      ? '<p class="note">Плеер не получил доступ к музыке.<br>Проверь CLIENT_ID в файле index.html: ключ Jamendo не вставлен или неверный.</p>'
+      : '<p class="note">Не удалось загрузить музыку.<br>Проверь интернет и нажми на жанр ещё раз.</p>';
   }
 }
 
