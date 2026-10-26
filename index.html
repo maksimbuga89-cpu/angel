@@ -5,204 +5,328 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ангел</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --sky:#eef3fb; --cloud:#ffffff; --ink:#1d2433; --mute:#6b7690;
-  --gold:#c99a3b; --halo:#f3e3b5; --line:#d9e1f0;
-  --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
+  --void:#070816; --nebula:#6c4cff; --aurora:#3ee6d0; --star:#f2f4ff; --planet:#ff9f6b;
+  --glass:rgba(20,22,52,.72); --line:rgba(160,170,255,.16); --dim:#9aa0d0;
 }
-@media (prefers-color-scheme:dark){
-  :root{--sky:#141a2a; --cloud:#1d2539; --ink:#eef1f8; --mute:#93a0bf; --gold:#e3b95c; --halo:#3a3322; --line:#2b3550}
-}
-*{box-sizing:border-box;margin:0}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
-body{background:var(--sky);color:var(--ink);font-family:"Iowan Old Style","Palatino Linotype",Georgia,serif;
-  padding-top:var(--safe-t);display:flex;flex-direction:column}
-header{padding:18px 18px 8px}
-h1{font-size:28px;font-weight:600;letter-spacing:.5px;display:flex;align-items:center;gap:10px}
-h1::before{content:"";width:26px;height:10px;border:2px solid var(--gold);border-radius:50%;box-shadow:0 0 12px var(--halo)}
-.search{margin-top:12px;display:flex;gap:8px}
-input[type=search]{flex:1;padding:12px 14px;border-radius:12px;border:1px solid var(--line);
-  background:var(--cloud);color:var(--ink);font:inherit;font-size:16px}
-input:focus-visible,button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-.modes{display:flex;gap:6px;margin-top:10px}
-.modes button,.chips button{border:1px solid var(--line);background:var(--cloud);color:var(--ink);font:inherit;font-size:14px;
-  padding:7px 12px;border-radius:999px;cursor:pointer;white-space:nowrap}
-.modes button.on,.chips button.on{background:var(--gold);border-color:var(--gold);color:#fff}
-.chips{display:none;gap:6px;margin-top:8px;overflow-x:auto;padding-bottom:4px}
-.chips.show{display:flex}
-#note{color:var(--mute);font-size:13px;margin-top:8px}
-#list{flex:1;overflow-y:auto;padding:4px 12px 16px}
-.hint{color:var(--mute);padding:8px 6px;font-size:14px}
-.row{display:flex;gap:12px;align-items:center;width:100%;text-align:left;padding:8px;border:0;border-radius:12px;
-  background:transparent;color:inherit;font:inherit;cursor:pointer}
-.row:hover,.row.on{background:var(--cloud)}
-.row img{width:48px;height:48px;border-radius:8px;object-fit:cover;background:var(--line)}
-.row b{display:block;font-weight:600;font-size:16px;line-height:1.25}
-.row span{color:var(--mute);font-size:13px}
-.row .t{min-width:0;flex:1}
-.row .t b,.row .t span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-footer{background:var(--cloud);border-top:1px solid var(--line);padding:12px 16px calc(12px + var(--safe-b))}
-.now{display:flex;gap:12px;align-items:center;margin-bottom:8px}
-.now img{width:44px;height:44px;border-radius:8px;background:var(--line);object-fit:cover}
-.now b{display:block;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.now span{font-size:13px;color:var(--mute)}
-.bar{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--mute);font-variant-numeric:tabular-nums}
-input[type=range]{flex:1;accent-color:var(--gold);height:28px}
-.ctl{display:flex;align-items:center;justify-content:space-between;margin-top:4px;gap:6px}
-.ctl button{border:0;background:transparent;color:var(--ink);font:inherit;font-size:14px;padding:10px 12px;border-radius:10px;cursor:pointer}
-.ctl button:hover{background:var(--sky)}
-.ctl .play{background:var(--gold);color:#fff;width:56px;height:56px;border-radius:50%;font-size:22px;padding:0}
-.ctl .play:hover{background:var(--gold);filter:brightness(1.08)}
-.vol{display:flex;align-items:center;gap:6px;width:120px}
-.vol input{width:100%}
-@media (max-width:420px){.vol{display:none}}
+body{
+  background:radial-gradient(ellipse at 20% 0%,#1a1250 0%,transparent 55%),
+             radial-gradient(ellipse at 90% 40%,#0d2a4a 0%,transparent 50%),var(--void);
+  color:var(--star);font-family:Manrope,system-ui,sans-serif;
+  padding:env(safe-area-inset-top) 0 0;
+}
+canvas#sky{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+main{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:18px 16px 190px}
+h1{font:700 28px Unbounded,sans-serif;letter-spacing:.5px;margin-bottom:14px}
+.search{display:flex;gap:8px}
+.search input{
+  flex:1;min-width:0;padding:14px 16px;border-radius:16px;border:1px solid var(--line);
+  background:var(--glass);color:var(--star);font:600 16px Manrope,sans-serif;outline:none;
+}
+.search input:focus-visible,button:focus-visible{outline:2px solid var(--aurora);outline-offset:2px}
+.search input::placeholder{color:var(--dim)}
+.search button{
+  width:52px;border-radius:16px;border:0;background:var(--nebula);color:#fff;font-size:20px;cursor:pointer
+}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:14px 0 6px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  flex:none;padding:9px 15px;border-radius:999px;border:1px solid var(--line);
+  background:transparent;color:var(--dim);font:600 14px Manrope,sans-serif;cursor:pointer
+}
+.chip.on{background:var(--aurora);color:#04131a;border-color:var(--aurora)}
+#list{margin-top:8px}
+.track{
+  display:flex;align-items:center;gap:12px;width:100%;padding:10px;border-radius:16px;
+  border:0;background:transparent;color:inherit;text-align:left;cursor:pointer;font-family:inherit
+}
+.track:active{background:rgba(108,76,255,.18)}
+.track.now{background:rgba(62,230,208,.1)}
+.track img{width:52px;height:52px;border-radius:50%;object-fit:cover;background:#1b1d4a;flex:none}
+.track .t{flex:1;min-width:0}
+.track b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.track span{display:block;font-size:13px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.track time{font-size:13px;color:var(--dim)}
+.note{color:var(--dim);text-align:center;padding:36px 12px;line-height:1.5}
+
+/* Плеер-док */
+#dock{
+  position:fixed;left:0;right:0;bottom:0;z-index:5;
+  padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border-top:1px solid var(--line);
+}
+.dock-in{max-width:560px;margin:0 auto}
+.row{display:flex;align-items:center;gap:12px}
+.planet{position:relative;width:64px;height:64px;flex:none}
+.planet img{position:absolute;inset:8px;width:48px;height:48px;border-radius:50%;object-fit:cover;background:#1b1d4a}
+.planet.spin img{animation:spin 14s linear infinite}
+.planet svg{position:absolute;inset:0;width:64px;height:64px}
+.orbit{fill:none;stroke:var(--line);stroke-width:2}
+.arc{fill:none;stroke:var(--aurora);stroke-width:2;stroke-linecap:round;transform:rotate(-90deg);transform-origin:32px 32px}
+.moon{transform-origin:32px 32px}
+.moon circle{fill:var(--planet)}
+.info{flex:1;min-width:0}
+.info b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.info span{display:block;font-size:13px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ctl{display:flex;align-items:center;gap:4px}
+.ctl button{
+  width:44px;height:44px;border-radius:50%;border:0;background:transparent;color:var(--star);
+  font-size:20px;cursor:pointer
+}
+.ctl #play{background:var(--nebula);width:50px;height:50px;font-size:22px}
+.seek{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:12px;color:var(--dim)}
+.seek time{width:36px;text-align:center}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;flex:1;height:28px;background:transparent;cursor:pointer
+}
+input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:4px;background:linear-gradient(90deg,var(--aurora) var(--p,0%),rgba(160,170,255,.25) var(--p,0%))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--star);margin-top:-6px}
+input[type=range]::-moz-range-track{height:4px;border-radius:4px;background:rgba(160,170,255,.25)}
+input[type=range]::-moz-range-progress{height:4px;border-radius:4px;background:var(--aurora)}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radius:50%;background:var(--star)}
+#volRow{display:none}
+#volRow.open{display:flex}
+#toast{
+  position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translateX(-50%) translateY(-90px);
+  z-index:9;background:#2a1d5a;border:1px solid var(--nebula);padding:10px 16px;border-radius:14px;
+  font-size:14px;transition:transform .25s;max-width:90%;text-align:center
+}
+#toast.show{transform:translateX(-50%) translateY(0)}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.planet.spin img{animation:none}}
 </style>
 </head>
 <body>
-<header>
+<canvas id="sky"></canvas>
+<div id="toast" role="status"></div>
+
+<main>
   <h1>Ангел</h1>
-  <form class="search" id="f"><input id="q" type="search" placeholder="Исполнитель или трек" autocomplete="off"></form>
-  <div class="modes">
-    <button id="m-audius" class="on">Полные треки</button>
-    <button id="m-apple">Хиты мира</button>
-  </div>
+  <form class="search" id="form">
+    <input id="q" type="search" placeholder="Песня или исполнитель" enterkeyhint="search" autocomplete="off" aria-label="Поиск музыки">
+    <button type="submit" aria-label="Найти">🔍</button>
+  </form>
   <div class="chips" id="chips"></div>
-  <div id="note"></div>
-</header>
+  <div id="list"></div>
+</main>
 
-<div id="list"><div class="hint">Загружаю…</div></div>
-
-<footer>
-  <div class="now"><img id="art" alt=""><div style="min-width:0"><b id="title">Ничего не играет</b><span id="artist">Выберите трек из списка</span></div></div>
-  <div class="bar"><span id="cur">0:00</span><input id="seek" type="range" min="0" max="1000" value="0" aria-label="Перемотка"><span id="dur">0:00</span></div>
-  <div class="ctl">
-    <button id="prev" aria-label="Предыдущий">⏮</button>
-    <button id="back" aria-label="Назад на 10 секунд">−10</button>
-    <button id="pp" class="play" aria-label="Играть или пауза">▶</button>
-    <button id="fwd" aria-label="Вперёд на 10 секунд">+10</button>
-    <button id="next" aria-label="Следующий">⏭</button>
-    <div class="vol"><span aria-hidden="true">🔈</span><input id="vol" type="range" min="0" max="100" value="80" aria-label="Громкость"></div>
+<section id="dock" aria-label="Плеер">
+  <div class="dock-in">
+    <div class="row">
+      <div class="planet" id="planet">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <circle class="orbit" cx="32" cy="32" r="30"/>
+          <circle class="arc" id="arc" cx="32" cy="32" r="30" stroke-dasharray="188.5" stroke-dashoffset="188.5"/>
+          <g class="moon" id="moon"><circle cx="32" cy="2" r="3.5"/></g>
+        </svg>
+        <img id="cover" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
+      </div>
+      <div class="info">
+        <b id="title">Выбери трек</b>
+        <span id="artist">Нажми на любую песню в списке</span>
+      </div>
+      <div class="ctl">
+        <button id="prev" aria-label="Предыдущий">⏮</button>
+        <button id="play" aria-label="Играть">▶</button>
+        <button id="next" aria-label="Следующий">⏭</button>
+      </div>
+    </div>
+    <div class="seek">
+      <time id="cur">0:00</time>
+      <input type="range" id="seek" min="0" max="1000" value="0" aria-label="Перемотка">
+      <time id="dur">0:00</time>
+      <button id="volBtn" aria-label="Громкость" style="border:0;background:none;font-size:18px;cursor:pointer">🔊</button>
+    </div>
+    <div class="seek" id="volRow">
+      <span style="width:36px;text-align:center">🔈</span>
+      <input type="range" id="vol" min="0" max="100" value="80" aria-label="Громкость">
+      <span style="width:36px;text-align:center">🔊</span>
+    </div>
   </div>
-</footer>
-
-<audio id="a" preload="none"></audio>
+</section>
 
 <script>
-const tg = window.Telegram?.WebApp; tg?.ready(); tg?.expand();
-const AUD = "https://discoveryprovider.audius.co/v1", APP = "Angel";
-const COUNTRIES = [["ru","Россия"],["us","США"],["es","Испания"],["mx","Мексика"],["br","Бразилия"],
-  ["fr","Франция"],["de","Германия"],["it","Италия"],["tr","Турция"],["kr","Корея"]];
+const CLIENT_ID = "c00ddc3c_JAMENDO_CLIENT_ID";
+const API = "https://api.jamendo.com/v3.0/tracks/";
+const GENRES = [["Популярное",""],["Электроника","electronic"],["Рок","rock"],["Хип-хоп","hiphop"],
+  ["Поп","pop"],["Лоу-фай","lofi"],["Джаз","jazz"],["Классика","classical"],["Эмбиент","ambient"]];
+
+const tg = window.Telegram?.WebApp;
+if (tg){ tg.ready(); tg.expand(); tg.setHeaderColor?.("#070816"); tg.setBackgroundColor?.("#070816"); }
+
 const $ = id => document.getElementById(id);
-const a = $("a");
-let src = "audius", cc = "ru", tracks = [], idx = -1;
+const audio = new Audio();
+audio.preload = "auto";
+audio.volume = 0.8;
 
-const fmt = s => { s = Math.max(0, s|0); return (s/60|0) + ":" + String(s%60).padStart(2,"0"); };
-const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const getJSON = async u => { const r = await fetch(u); if(!r.ok) throw new Error(r.status); return r.json(); };
+let queue = [], idx = -1, failStreak = 0, tag = "";
 
-const fromAudius = t => ({ title:t.title, artist:t.user?.name||"", dur:t.duration,
-  art:t.artwork?.["150x150"]||"", art2:t.artwork?.["480x480"]||t.artwork?.["150x150"]||"",
-  url:`${AUD}/tracks/${t.id}/stream?app_name=${APP}` });
-const fromApple = r => ({ title:r.trackName, artist:r.artistName, dur:30,
-  art:r.artworkUrl100||"", art2:(r.artworkUrl100||"").replace("100x100","600x600"), url:r.previewUrl });
-
-async function fetchTracks(query){
-  if(src === "audius"){
-    const u = query ? `${AUD}/tracks/search?query=${encodeURIComponent(query)}&limit=40&app_name=${APP}`
-                    : `${AUD}/tracks/trending?limit=40&app_name=${APP}`;
-    return (await getJSON(u)).data.map(fromAudius);
-  }
-  if(query){
-    const j = await getJSON(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=music&entity=song&limit=40&country=${cc}`);
-    return j.results.filter(r => r.previewUrl).map(fromApple);
-  }
-  // чарт выбранной страны: сначала список, потом ссылки на отрывки
-  const feed = await getJSON(`https://rss.applemarketingtools.com/api/v2/${cc}/music/most-played/50/songs.json`);
-  const ids = feed.feed.results.map(x => x.id);
-  const look = await getJSON(`https://itunes.apple.com/lookup?id=${ids.join(",")}&country=${cc}`);
-  const byId = {}; look.results.forEach(r => byId[String(r.trackId)] = r);
-  return ids.map(id => byId[id]).filter(r => r && r.previewUrl).map(fromApple);
+/* ---------- Утилиты ---------- */
+const fmt = s => { s = Math.floor(s || 0); return Math.floor(s/60) + ":" + String(s%60).padStart(2,"0"); };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let toastTimer;
+function toast(msg){
+  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2800);
 }
+const setFill = (el, pct) => el.style.setProperty("--p", pct + "%");
 
-async function go(query){
-  $("list").innerHTML = '<div class="hint">Загружаю…</div>';
-  try{ tracks = await fetchTracks(query); idx = -1; render(); }
-  catch(e){ $("list").innerHTML = '<div class="hint">Не удалось загрузить. Проверьте интернет и попробуйте ещё раз.</div>'; }
+/* ---------- Поиск ---------- */
+async function load(q = "", genre = ""){
+  $("list").innerHTML = '<p class="note">Ищу в космосе…</p>';
+  const p = new URLSearchParams({client_id: CLIENT_ID, format: "json", limit: 30, imagesize: 200, audioformat: "mp32"});
+  if (q) p.set("search", q); else p.set("order", "popularity_week");
+  if (genre) p.set("tags", genre);
+  try {
+    const r = await fetch(API + "?" + p, {signal: AbortSignal.timeout(10000)});
+    if (!r.ok) throw new Error(r.status);
+    const data = await r.json();
+    queue = (data.results || []).filter(t => t.audio);
+    idx = -1;
+    render();
+  } catch (e) {
+    $("list").innerHTML = '<p class="note">Не удалось загрузить музыку.<br>Проверь интернет и нажми на жанр ещё раз.</p>';
+  }
 }
 
 function render(){
-  if(!tracks.length){ $("list").innerHTML = '<div class="hint">Ничего не найдено. Попробуйте другой запрос.</div>'; return; }
-  $("list").innerHTML = tracks.map((t,i)=>`
-    <button class="row ${i===idx?"on":""}" data-i="${i}">
-      <img src="${esc(t.art)}" alt="">
-      <div class="t"><b>${esc(t.title)}</b><span>${esc(t.artist)}</span></div>
-      <span>${fmt(t.dur)}</span>
+  const box = $("list");
+  if (!queue.length){
+    box.innerHTML = '<p class="note">Ничего не нашлось 🔭<br>Попробуй другое название.</p>';
+    return;
+  }
+  box.innerHTML = queue.map((t, i) => `
+    <button class="track${i === idx ? " now" : ""}" data-i="${i}">
+      <img src="${esc(t.image || "")}" alt="" loading="lazy">
+      <div class="t"><b>${esc(t.name)}</b><span>${esc(t.artist_name)}</span></div>
+      <time>${fmt(t.duration)}</time>
     </button>`).join("");
 }
-
-function setMode(m){
-  src = m;
-  $("m-audius").classList.toggle("on", m==="audius");
-  $("m-apple").classList.toggle("on", m==="apple");
-  $("chips").classList.toggle("show", m==="apple");
-  $("note").textContent = m==="apple"
-    ? "Мировые хиты: отрывки по 30 секунд. Выберите страну или найдите исполнителя."
-    : "Полные треки независимых исполнителей.";
-  go($("q").value.trim());
-}
-function drawChips(){
-  $("chips").innerHTML = COUNTRIES.map(([c,n]) => `<button data-c="${c}" class="${c===cc?"on":""}">${n}</button>`).join("");
-}
-$("chips").addEventListener("click", e => {
-  const b = e.target.closest("button"); if(!b) return;
-  cc = b.dataset.c; drawChips(); go($("q").value.trim());
+$("list").addEventListener("click", e => {
+  const b = e.target.closest(".track"); if (b) play(+b.dataset.i);
 });
-$("m-audius").onclick = () => setMode("audius");
-$("m-apple").onclick  = () => setMode("apple");
 
+/* ---------- Плеер ---------- */
 function play(i){
-  if(i<0||i>=tracks.length) return;
-  idx = i; const t = tracks[i];
-  a.src = t.url; a.play().catch(()=>{});
-  $("title").textContent = t.title; $("artist").textContent = t.artist;
-  $("art").src = t.art;
-  if("mediaSession" in navigator){
-    navigator.mediaSession.metadata = new MediaMetadata({title:t.title, artist:t.artist,
-      artwork:[{src:t.art2||t.art, sizes:"480x480"}]});
+  if (i < 0 || i >= queue.length) return;
+  idx = i;
+  const t = queue[i];
+  audio.src = t.audio;
+  audio.play().catch(() => {});
+  $("title").textContent = t.name;
+  $("artist").textContent = t.artist_name;
+  $("cover").src = t.image || $("cover").src;
+  document.querySelectorAll(".track").forEach((el, k) => el.classList.toggle("now", k === i));
+  if ("mediaSession" in navigator){
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: t.name, artist: t.artist_name, artwork: t.image ? [{src: t.image, sizes: "200x200"}] : []
+    });
   }
-  render();
+  tg?.HapticFeedback?.impactOccurred("light");
 }
+const next = () => play(idx + 1 < queue.length ? idx + 1 : 0);
+const prev = () => audio.currentTime > 4 ? (audio.currentTime = 0) : play(idx > 0 ? idx - 1 : queue.length - 1);
+const toggle = () => { if (idx < 0 && queue.length) return play(0); audio.paused ? audio.play() : audio.pause(); };
 
-$("list").addEventListener("click", e => { const r = e.target.closest(".row"); if(r) play(+r.dataset.i); });
-$("f").addEventListener("submit", e => { e.preventDefault(); go($("q").value.trim()); $("q").blur(); });
+$("play").onclick = toggle;
+$("next").onclick = next;
+$("prev").onclick = prev;
+$("volBtn").onclick = () => $("volRow").classList.toggle("open");
 
-$("pp").onclick = () => { if(!a.src){ if(tracks.length) play(0); return; } a.paused ? a.play() : a.pause(); };
-$("prev").onclick = () => play(idx-1);
-$("next").onclick = () => play(idx+1);
-$("back").onclick = () => a.currentTime = Math.max(0, a.currentTime-10);
-$("fwd").onclick  = () => a.currentTime = Math.min(a.duration||1e9, a.currentTime+10);
-$("vol").oninput  = e => a.volume = e.target.value/100;
-a.volume = .8;
-
-let dragging = false;
-$("seek").addEventListener("input", () => { dragging = true; $("cur").textContent = fmt($("seek").value/1000*(a.duration||0)); });
-$("seek").addEventListener("change", () => { a.currentTime = $("seek").value/1000*(a.duration||0); dragging = false; });
-
-a.addEventListener("timeupdate", () => {
-  if(!dragging && a.duration){ $("seek").value = a.currentTime/a.duration*1000; $("cur").textContent = fmt(a.currentTime); }
+audio.addEventListener("play",  () => { $("play").textContent = "⏸"; $("planet").classList.add("spin"); });
+audio.addEventListener("pause", () => { $("play").textContent = "▶"; $("planet").classList.remove("spin"); });
+audio.addEventListener("playing", () => { failStreak = 0; });
+audio.addEventListener("ended", next);
+audio.addEventListener("error", () => {
+  failStreak++;
+  if (failStreak >= Math.min(queue.length, 3)){ toast("Трек не загрузился. Проверь интернет."); failStreak = 0; return; }
+  toast("Этот трек недоступен, включаю следующий");
+  setTimeout(next, 700);
 });
-a.addEventListener("loadedmetadata", () => $("dur").textContent = fmt(a.duration));
-a.addEventListener("play",  () => $("pp").textContent = "⏸");
-a.addEventListener("pause", () => $("pp").textContent = "▶");
-a.addEventListener("ended", () => play(idx+1));
+audio.addEventListener("loadedmetadata", () => { $("dur").textContent = fmt(audio.duration); });
+audio.addEventListener("timeupdate", () => {
+  const d = audio.duration || 0, c = audio.currentTime;
+  const pct = d ? c / d : 0;
+  $("cur").textContent = fmt(c);
+  if (!seeking){ $("seek").value = pct * 1000; setFill($("seek"), pct * 100); }
+  $("arc").style.strokeDashoffset = 188.5 * (1 - pct);
+  $("moon").style.transform = `rotate(${pct * 360}deg)`;
+});
 
-if("mediaSession" in navigator){
-  const m = navigator.mediaSession;
-  m.setActionHandler("play",()=>a.play()); m.setActionHandler("pause",()=>a.pause());
-  m.setActionHandler("previoustrack",()=>play(idx-1)); m.setActionHandler("nexttrack",()=>play(idx+1));
+let seeking = false;
+const sk = $("seek");
+sk.addEventListener("input", () => {
+  seeking = true; setFill(sk, sk.value / 10);
+  if (audio.duration) $("cur").textContent = fmt(audio.duration * sk.value / 1000);
+});
+sk.addEventListener("change", () => {
+  if (audio.duration) audio.currentTime = audio.duration * sk.value / 1000;
+  seeking = false;
+});
+const vl = $("vol");
+vl.addEventListener("input", () => { audio.volume = vl.value / 100; setFill(vl, vl.value);
+  $("volBtn").textContent = vl.value == 0 ? "🔇" : "🔊"; });
+setFill(vl, 80);
+
+if ("mediaSession" in navigator){
+  navigator.mediaSession.setActionHandler("play", () => audio.play());
+  navigator.mediaSession.setActionHandler("pause", () => audio.pause());
+  navigator.mediaSession.setActionHandler("nexttrack", next);
+  navigator.mediaSession.setActionHandler("previoustrack", prev);
 }
-drawChips(); setMode("audius");
+
+/* ---------- Жанры и форма ---------- */
+$("chips").innerHTML = GENRES.map(([n, g], i) =>
+  `<button class="chip${i === 0 ? " on" : ""}" data-g="${g}">${n}</button>`).join("");
+$("chips").addEventListener("click", e => {
+  const c = e.target.closest(".chip"); if (!c) return;
+  document.querySelectorAll(".chip").forEach(x => x.classList.toggle("on", x === c));
+  tag = c.dataset.g; $("q").value = ""; load("", tag);
+});
+$("form").addEventListener("submit", e => {
+  e.preventDefault();
+  const q = $("q").value.trim(); if (!q) return;
+  $("q").blur();
+  document.querySelectorAll(".chip").forEach((x, i) => x.classList.toggle("on", i === 0));
+  load(q, "");
+});
+
+/* ---------- Звёздное небо ---------- */
+(function sky(){
+  const cv = $("sky"), ctx = cv.getContext("2d");
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let w, h, stars = [];
+  function size(){
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    w = cv.width = innerWidth * dpr; h = cv.height = innerHeight * dpr;
+    stars = Array.from({length: 110}, () => ({
+      x: Math.random() * w, y: Math.random() * h, r: (Math.random() * 1.3 + .3) * dpr,
+      s: Math.random() * .25 + .05, a: Math.random() * 6.28
+    }));
+  }
+  function frame(t){
+    ctx.clearRect(0, 0, w, h);
+    for (const s of stars){
+      const a = .45 + .45 * Math.sin(t / 900 + s.a);
+      ctx.fillStyle = `rgba(242,244,255,${still ? .7 : a})`;
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.28); ctx.fill();
+      if (!still){ s.y += s.s; if (s.y > h) { s.y = 0; s.x = Math.random() * w; } }
+    }
+    if (!still && !document.hidden) requestAnimationFrame(frame);
+  }
+  addEventListener("resize", size);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && !still) requestAnimationFrame(frame); });
+  size(); requestAnimationFrame(frame);
+})();
+
+load();
 </script>
 </body>
 </html>
