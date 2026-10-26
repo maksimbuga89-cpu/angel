@@ -108,7 +108,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
 <div id="toast" role="status"></div>
 
 <main>
-  <h1>Ангел <small style="font:500 11px Manrope,sans-serif;color:var(--dim)">v2</small></h1>
+  <h1>Ангел <small style="font:500 11px Manrope,sans-serif;color:var(--dim)">v3</small></h1>
   <form class="search" id="form">
     <input id="q" type="search" placeholder="Песня или исполнитель" enterkeyhint="search" autocomplete="off" aria-label="Поиск музыки">
     <button type="submit" aria-label="Найти">🔍</button>
@@ -155,7 +155,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
 <script>
 const CLIENT_ID = "c00ddc3c";
 const API = "https://api.jamendo.com/v3.0/tracks/";
-const GENRES = [["Популярное",""],["Электроника","electronic"],["Рок","rock"],["Хип-хоп","hiphop"],
+const GENRES = [["Популярное",""],["Русские","lang:ru"],["Электроника","electronic"],["Рок","rock"],["Хип-хоп","hiphop"],
   ["Поп","pop"],["Лоу-фай","lofi"],["Джаз","jazz"],["Классика","classical"],["Эмбиент","ambient"]];
 
 const tg = window.Telegram?.WebApp;
@@ -183,7 +183,8 @@ async function load(q = "", genre = ""){
   $("list").innerHTML = '<p class="note">Ищу в космосе…</p>';
   const p = new URLSearchParams({client_id: CLIENT_ID, format: "json", limit: 30, imagesize: 200, audioformat: "mp32"});
   if (q) p.set("search", q); else p.set("order", "popularity_week");
-  if (genre) p.set("tags", genre);
+  if (genre.startsWith("lang:")) p.set("lang", genre.slice(5));
+  else if (genre) p.set("tags", genre);
   try {
     const r = await fetch(API + "?" + p, {signal: AbortSignal.timeout(10000)});
     if (!r.ok) throw new Error(r.status);
