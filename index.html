@@ -108,7 +108,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
 <div id="toast" role="status"></div>
 
 <main>
-  <h1>Ангел <small style="font:500 11px Manrope,sans-serif;color:var(--dim)">v4</small></h1>
+  <h1>Ангел <small style="font:500 11px Manrope,sans-serif;color:var(--dim)">v5</small></h1>
   <form class="search" id="form">
     <input id="q" type="search" placeholder="Песня или исполнитель" enterkeyhint="search" autocomplete="off" aria-label="Поиск музыки">
     <button type="submit" aria-label="Найти">🔍</button>
@@ -182,8 +182,9 @@ function toast(msg){
 const setFill = (el, pct) => el.style.setProperty("--p", pct + "%");
 
 /* ---------- Общий плейлист (из бота) ---------- */
-async function loadPlaylist(){
-  $("list").innerHTML = '<p class="note">Открываю плейлист…</p>';
+async function loadPlaylist(silent = false){
+  if (!silent) $("list").innerHTML = '<p class="note">Открываю плейлист…</p>';
+  const curId = idx >= 0 && queue[idx]?.mine ? queue[idx].id : null;
   try {
     const r = await fetch(API_BASE + "/api/playlist", {signal: AbortSignal.timeout(10000)});
     if (!r.ok) throw new Error(r.status);
@@ -192,9 +193,10 @@ async function loadPlaylist(){
       id: t.id, name: t.title, artist_name: t.performer, duration: t.duration || 0, image: "",
       audio: API_BASE + "/api/stream/" + t.id, plays: t.plays || 0, likes: t.likes || 0, mine: true
     }));
-    idx = -1;
+    idx = curId == null ? -1 : queue.findIndex(t => t.id === curId);
     render();
   } catch (e) {
+    if (silent) return;
     $("list").innerHTML = '<p class="note">Плейлист сейчас недоступен.<br>Бот выключен или нет связи. Попробуй позже.<br><small>' + esc(e.message) + '</small></p>';
   }
 }
@@ -358,6 +360,10 @@ $("form").addEventListener("submit", e => {
 })();
 
 load("", tag);
+/* Вернулся из чата после добавления трека — список обновляется сам */
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && tag === "my" && API_BASE) loadPlaylist(true);
+});
 </script>
 </body>
 </html>
