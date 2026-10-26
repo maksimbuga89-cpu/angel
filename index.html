@@ -108,7 +108,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
 <div id="toast" role="status"></div>
 
 <main>
-  <h1>Ангел</h1>
+  <h1>Ангел <small style="font:500 11px Manrope,sans-serif;color:var(--dim)">v2</small></h1>
   <form class="search" id="form">
     <input id="q" type="search" placeholder="Песня или исполнитель" enterkeyhint="search" autocomplete="off" aria-label="Поиск музыки">
     <button type="submit" aria-label="Найти">🔍</button>
@@ -195,8 +195,8 @@ async function load(q = "", genre = ""){
   } catch (e) {
     const badKey = CLIENT_ID.startsWith("ВСТАВЬ") || /jamendo/i.test(e.message);
     $("list").innerHTML = badKey
-      ? '<p class="note">Плеер не получил доступ к музыке.<br>Проверь CLIENT_ID в файле index.html: ключ Jamendo не вставлен или неверный.</p>'
-      : '<p class="note">Не удалось загрузить музыку.<br>Проверь интернет и нажми на жанр ещё раз.</p>';
+      ? '<p class="note">Плеер не получил доступ к музыке.<br>Проверь CLIENT_ID в файле index.html: ключ Jamendo не вставлен или неверный.<br><small>' + esc(e.message) + '</small></p>'
+      : '<p class="note">Не удалось загрузить музыку.<br>Проверь интернет и нажми на жанр ещё раз.<br><small>' + esc(e.message) + '</small></p>';
   }
 }
 
