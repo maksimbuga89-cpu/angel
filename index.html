@@ -204,7 +204,7 @@ if (!CID || !/^[A-Za-z0-9-]{16,64}$/.test(CID)){
 }
 
 async function api(path, opt = {}){
-  const headers = {"X-Client-Id": CID};
+  const headers = {"X-Client-Id": CID, "ngrok-skip-browser-warning": "1"};
   if (tg && tg.initData) headers["X-Init-Data"] = tg.initData;
   const r = await fetch(API_BASE + path, {...opt, headers, signal: AbortSignal.timeout(10000)});
   if (!r.ok) throw new Error(r.status);
