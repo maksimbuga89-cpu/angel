@@ -10,7 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --void:#070816; --nebula:#6c4cff; --aurora:#3ee6d0; --star:#f2f4ff; --planet:#ff9f6b;
+  --void:#070816; --nebula:#6c4cff; --aurora:#3ee6d0; --star:#f2f4ff; --planet:#ff9f6b; --heart:#ff5c8a;
   --glass:rgba(20,22,52,.72); --line:rgba(160,170,255,.16); --dim:#9aa0d0;
 }
 *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
@@ -22,37 +22,40 @@ body{
   padding:env(safe-area-inset-top) 0 0;
 }
 canvas#sky{position:fixed;inset:0;width:100%;height:100%;z-index:0}
-main{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:18px 16px 190px}
+main{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:18px 16px 230px}
 h1{font:700 28px Unbounded,sans-serif;letter-spacing:.5px;margin-bottom:14px}
-.search{display:flex;gap:8px}
 .search input{
-  flex:1;min-width:0;padding:14px 16px;border-radius:16px;border:1px solid var(--line);
+  width:100%;padding:14px 16px;border-radius:16px;border:1px solid var(--line);
   background:var(--glass);color:var(--star);font:600 16px Manrope,sans-serif;outline:none;
 }
 .search input:focus-visible,button:focus-visible{outline:2px solid var(--aurora);outline-offset:2px}
 .search input::placeholder{color:var(--dim)}
-.search button{
-  width:52px;border-radius:16px;border:0;background:var(--nebula);color:#fff;font-size:20px;cursor:pointer
-}
-.chips{display:flex;gap:8px;overflow-x:auto;padding:14px 0 6px;scrollbar-width:none}
-.chips::-webkit-scrollbar{display:none}
+.chips{display:flex;gap:8px;padding:14px 0 6px}
 .chip{
-  flex:none;padding:9px 15px;border-radius:999px;border:1px solid var(--line);
-  background:transparent;color:var(--dim);font:600 14px Manrope,sans-serif;cursor:pointer
+  flex:1;padding:11px 15px;border-radius:999px;border:1px solid var(--line);
+  background:transparent;color:var(--dim);font:600 15px Manrope,sans-serif;cursor:pointer
 }
 .chip.on{background:var(--aurora);color:#04131a;border-color:var(--aurora)}
-#list{margin-top:8px}
-.track{
-  display:flex;align-items:center;gap:12px;width:100%;padding:10px;border-radius:16px;
+#sum{font-size:13px;color:var(--dim);padding:8px 4px 0}
+#list{margin-top:6px}
+.track{display:flex;align-items:center;gap:4px;border-radius:16px}
+.track.now{background:rgba(62,230,208,.1)}
+.track .open{
+  flex:1;min-width:0;display:flex;align-items:center;gap:12px;padding:10px;border-radius:16px;
   border:0;background:transparent;color:inherit;text-align:left;cursor:pointer;font-family:inherit
 }
-.track:active{background:rgba(108,76,255,.18)}
-.track.now{background:rgba(62,230,208,.1)}
+.track .open:active{background:rgba(108,76,255,.18)}
 .track img{width:52px;height:52px;border-radius:50%;object-fit:cover;background:#1b1d4a;flex:none}
 .track .t{flex:1;min-width:0}
 .track b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.track span{display:block;font-size:13px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.track .sub{display:block;font-size:13px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .track time{font-size:13px;color:var(--dim)}
+.like{
+  flex:none;min-width:52px;height:48px;border:0;border-radius:14px;background:transparent;color:var(--dim);
+  font:600 13px Manrope,sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px
+}
+.like .h{font-size:18px;line-height:1}
+.like.on{color:var(--heart)}
 .note{color:var(--dim);text-align:center;padding:36px 12px;line-height:1.5}
 
 /* Плеер-док */
@@ -83,6 +86,14 @@ h1{font:700 28px Unbounded,sans-serif;letter-spacing:.5px;margin-bottom:14px}
 .ctl #play{background:var(--nebula);width:50px;height:50px;font-size:22px}
 .seek{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:12px;color:var(--dim)}
 .seek time{width:36px;text-align:center}
+.tools{display:flex;justify-content:space-between;margin-top:4px}
+.tool{
+  min-width:56px;height:40px;padding:0 10px;border-radius:12px;border:0;background:transparent;color:var(--dim);
+  font:600 14px Manrope,sans-serif;cursor:pointer;opacity:.8
+}
+.tool.on{color:var(--aurora);opacity:1}
+.tool:disabled{opacity:.35;cursor:default}
+#dLike.on{color:var(--heart);opacity:1}
 input[type=range]{
   -webkit-appearance:none;appearance:none;flex:1;height:28px;background:transparent;cursor:pointer
 }
@@ -108,12 +119,15 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
 <div id="toast" role="status"></div>
 
 <main>
-  <h1>Ангел <small style="font:500 11px Manrope,sans-serif;color:var(--dim)">v5</small></h1>
-  <form class="search" id="form">
-    <input id="q" type="search" placeholder="Песня или исполнитель" enterkeyhint="search" autocomplete="off" aria-label="Поиск музыки">
-    <button type="submit" aria-label="Найти">🔍</button>
-  </form>
-  <div class="chips" id="chips"></div>
+  <h1>Ангел</h1>
+  <div class="search">
+    <input id="q" type="search" placeholder="Поиск по плейлисту" autocomplete="off" aria-label="Поиск по плейлисту">
+  </div>
+  <div class="chips" id="chips">
+    <button class="chip on" data-tab="wave">🌊 Волна</button>
+    <button class="chip" data-tab="fav">❤ Избранное</button>
+  </div>
+  <div id="sum"></div>
   <div id="list"></div>
 </main>
 
@@ -126,7 +140,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
           <circle class="arc" id="arc" cx="32" cy="32" r="30" stroke-dasharray="188.5" stroke-dashoffset="188.5"/>
           <g class="moon" id="moon"><circle cx="32" cy="2" r="3.5"/></g>
         </svg>
-        <img id="cover" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
+        <img id="cover" alt="">
       </div>
       <div class="info">
         <b id="title">Выбери трек</b>
@@ -142,7 +156,12 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
       <time id="cur">0:00</time>
       <input type="range" id="seek" min="0" max="1000" value="0" aria-label="Перемотка">
       <time id="dur">0:00</time>
-      <button id="volBtn" aria-label="Громкость" style="border:0;background:none;font-size:18px;cursor:pointer">🔊</button>
+    </div>
+    <div class="tools">
+      <button class="tool" id="shuffle" aria-label="Перемешать" aria-pressed="false">🔀</button>
+      <button class="tool" id="dLike" aria-label="В избранное" disabled>🤍</button>
+      <button class="tool" id="repeat" aria-label="Повтор">🔁</button>
+      <button class="tool" id="volBtn" aria-label="Громкость">🔊</button>
     </div>
     <div class="seek" id="volRow">
       <span style="width:36px;text-align:center">🔈</span>
@@ -153,143 +172,276 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
 </section>
 
 <script>
-const CLIENT_ID = "c00ddc3c";
-/* Адрес API бота приходит в ссылке плеера: ...?api=https://... */
-const API_BASE = (new URLSearchParams(location.search).get("api") || "").replace(/\/$/, "");
+/* Адрес API. Если сайт открыт с адреса бота — ничего менять не надо.
+   Если сайт лежит на GitHub Pages, впиши сюда адрес бота: "https://что-то.trycloudflare.com" */
+const DEFAULT_API = "";
+const API_BASE = (new URLSearchParams(location.search).get("api") || DEFAULT_API ||
+  (location.protocol.startsWith("http") && !/\.github\.io$/.test(location.hostname) ? location.origin : "")).replace(/\/$/, "");
 const PH = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6c4cff"/><stop offset="1" stop-color="#3ee6d0"/></linearGradient></defs><rect width="52" height="52" fill="url(#g)"/><text x="26" y="34" font-size="24" text-anchor="middle">🎵</text></svg>');
-const API = "https://api.jamendo.com/v3.0/tracks/";
-const GENRES = [...(API_BASE ? [["⭐ Ангел","my"]] : []), ["Популярное",""],["Русские","lang:ru"],["Электроника","electronic"],["Рок","rock"],["Хип-хоп","hiphop"],
-  ["Поп","pop"],["Лоу-фай","lofi"],["Джаз","jazz"],["Классика","classical"],["Эмбиент","ambient"]];
 
 const tg = window.Telegram?.WebApp;
-if (tg){ tg.ready(); tg.expand(); tg.setHeaderColor?.("#070816"); tg.setBackgroundColor?.("#070816"); }
+if (tg && tg.initData){ tg.ready(); tg.expand(); tg.setHeaderColor?.("#070816"); tg.setBackgroundColor?.("#070816"); }
 
 const $ = id => document.getElementById(id);
-const audio = new Audio();
-audio.preload = "auto";
-audio.volume = 0.8;
-
-let queue = [], idx = -1, failStreak = 0, tag = API_BASE ? "my" : "";
-
-/* ---------- Утилиты ---------- */
-const fmt = s => { s = Math.floor(s || 0); return Math.floor(s/60) + ":" + String(s%60).padStart(2,"0"); };
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = s => { s = Math.floor(s || 0); return Math.floor(s/60) + ":" + String(s%60).padStart(2,"0"); };
+const setFill = (el, pct) => el.style.setProperty("--p", pct + "%");
 let toastTimer;
 function toast(msg){
   const t = $("toast"); t.textContent = msg; t.classList.add("show");
   clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2800);
 }
-const setFill = (el, pct) => el.style.setProperty("--p", pct + "%");
 
-/* ---------- Общий плейлист (из бота) ---------- */
-async function loadPlaylist(silent = false){
+/* ---------- Хранилище настроек (может быть недоступно) ---------- */
+const store = {
+  get(k){ try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v){ try { localStorage.setItem(k, v); } catch {} }
+};
+let CID = store.get("angel_cid");
+if (!CID || !/^[A-Za-z0-9-]{16,64}$/.test(CID)){
+  CID = (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2));
+  store.set("angel_cid", CID);
+}
+
+async function api(path, opt = {}){
+  const headers = {"X-Client-Id": CID};
+  if (tg && tg.initData) headers["X-Init-Data"] = tg.initData;
+  const r = await fetch(API_BASE + path, {...opt, headers, signal: AbortSignal.timeout(10000)});
+  if (!r.ok) throw new Error(r.status);
+  return r.json();
+}
+
+/* ---------- Состояние ---------- */
+const audio = new Audio();
+audio.preload = "auto";
+audio.volume = 0.8;
+
+let all = [];                 // все треки «Волны», самые популярные первыми
+const byId = new Map();
+let tab = "wave", term = "";
+let curId = null, counted = false, failStreak = 0;
+let playIds = [], order = [], pos = -1;      // очередь воспроизведения
+let shuffleOn = store.get("angel_shuffle") === "1";
+let repeat = ["all","one","off"].includes(store.get("angel_repeat")) ? store.get("angel_repeat") : "all";
+
+const popular = (a, b) => b.likes - a.likes || b.plays - a.plays || b.id - a.id;
+const sub = t => `${esc(t.performer)} · ▶ ${t.plays}`;
+
+/* ---------- Загрузка плейлиста ---------- */
+async function loadAll(silent = false){
+  if (!API_BASE){
+    $("list").innerHTML = '<p class="note">Не указан адрес бота.<br>Открой сайт по ссылке из Telegram-бота<br>или впиши адрес в DEFAULT_API в index.html.</p>';
+    return;
+  }
   if (!silent) $("list").innerHTML = '<p class="note">Открываю плейлист…</p>';
-  const curId = idx >= 0 && queue[idx]?.mine ? queue[idx].id : null;
   try {
-    const r = await fetch(API_BASE + "/api/playlist", {signal: AbortSignal.timeout(10000)});
-    if (!r.ok) throw new Error(r.status);
-    const data = await r.json();
-    queue = (data.tracks || []).map(t => ({
-      id: t.id, name: t.title, artist_name: t.performer, duration: t.duration || 0, image: "",
-      audio: API_BASE + "/api/stream/" + t.id, plays: t.plays || 0, likes: t.likes || 0, mine: true
-    }));
-    idx = curId == null ? -1 : queue.findIndex(t => t.id === curId);
-    render();
+    const data = await api("/api/playlist");
+    all = (data.tracks || []).sort(popular);
+    byId.clear(); all.forEach(t => byId.set(t.id, t));
+    render(); syncDock();
   } catch (e) {
     if (silent) return;
     $("list").innerHTML = '<p class="note">Плейлист сейчас недоступен.<br>Бот выключен или нет связи. Попробуй позже.<br><small>' + esc(e.message) + '</small></p>';
   }
 }
 
-/* ---------- Поиск ---------- */
-async function load(q = "", genre = ""){
-  if (genre === "my") return loadPlaylist();
-  $("list").innerHTML = '<p class="note">Ищу в космосе…</p>';
-  const p = new URLSearchParams({client_id: CLIENT_ID, format: "json", limit: 30, imagesize: 200, audioformat: "mp32"});
-  if (q) p.set("search", q); else p.set("order", "popularity_week");
-  if (genre.startsWith("lang:")) p.set("lang", genre.slice(5));
-  else if (genre) p.set("tags", genre);
-  try {
-    const r = await fetch(API + "?" + p, {signal: AbortSignal.timeout(10000)});
-    if (!r.ok) throw new Error(r.status);
-    const data = await r.json();
-    if (data.headers && data.headers.status === "failed") throw new Error("jamendo: " + (data.headers.error_message || "failed"));
-    queue = (data.results || []).filter(t => t.audio);
-    idx = -1;
-    render();
-  } catch (e) {
-    const badKey = CLIENT_ID.startsWith("ВСТАВЬ") || /jamendo/i.test(e.message);
-    $("list").innerHTML = badKey
-      ? '<p class="note">Плеер не получил доступ к музыке.<br>Проверь CLIENT_ID в файле index.html: ключ Jamendo не вставлен или неверный.<br><small>' + esc(e.message) + '</small></p>'
-      : '<p class="note">Не удалось загрузить музыку.<br>Проверь интернет и нажми на жанр ещё раз.<br><small>' + esc(e.message) + '</small></p>';
-  }
+function viewList(){
+  let l = tab === "fav" ? all.filter(t => t.liked) : all;
+  const s = term.trim().toLowerCase();
+  if (s) l = l.filter(t => (t.title + " " + t.performer).toLowerCase().includes(s));
+  return l;
+}
+
+function rowHtml(t){
+  return `<div class="track${t.id === curId ? " now" : ""}" data-id="${t.id}">
+    <button class="open" data-act="play" aria-label="Играть: ${esc(t.title)}">
+      <img src="${PH}" alt="">
+      <div class="t"><b>${esc(t.title)}</b><span class="sub">${sub(t)}</span></div>
+      <time>${fmt(t.duration)}</time>
+    </button>
+    <button class="like${t.liked ? " on" : ""}" data-act="like" aria-pressed="${t.liked}" aria-label="Лайк">
+      <span class="h">${t.liked ? "❤" : "🤍"}</span><span class="n">${t.likes}</span>
+    </button>
+  </div>`;
 }
 
 function render(){
-  const box = $("list");
-  if (!queue.length){
-    box.innerHTML = tag === "my"
-      ? '<p class="note">В плейлисте пока пусто 🌑<br>Владелец добавит треки через бота.</p>'
-      : '<p class="note">Ничего не нашлось 🔭<br>Попробуй другое название.</p>';
+  const l = viewList(), box = $("list");
+  const plays = all.reduce((s, t) => s + t.plays, 0), likes = all.reduce((s, t) => s + t.likes, 0);
+  $("sum").textContent = all.length ? `${all.length} треков · ▶ ${plays} · ❤ ${likes}` : "";
+  if (!l.length){
+    box.innerHTML = term.trim() ? '<p class="note">Ничего не нашлось 🔭</p>'
+      : tab === "fav" ? '<p class="note">Здесь будут песни, которым ты поставил ❤<br>Видишь их только ты.</p>'
+      : '<p class="note">В «Волне» пока пусто 🌑<br>Владелец добавит треки через бота.</p>';
     return;
   }
-  box.innerHTML = queue.map((t, i) => `
-    <button class="track${i === idx ? " now" : ""}" data-i="${i}">
-      <img src="${esc(t.image || PH)}" alt="" loading="lazy">
-      <div class="t"><b>${esc(t.name)}</b><span>${esc(t.artist_name)}${t.mine ? " · 👁 " + t.plays + " ❤ " + t.likes : ""}</span></div>
-      <time>${fmt(t.duration)}</time>
-    </button>`).join("");
+  box.innerHTML = l.map(rowHtml).join("");
 }
-$("list").addEventListener("click", e => {
-  const b = e.target.closest(".track"); if (b) play(+b.dataset.i);
-});
 
-/* ---------- Плеер ---------- */
-function play(i){
-  if (i < 0 || i >= queue.length) return;
-  idx = i;
-  const t = queue[i];
-  audio.src = t.audio;
-  audio.play().catch(() => {});
-  $("title").textContent = t.name;
-  $("artist").textContent = t.artist_name;
-  $("cover").src = t.image || PH;
-  if (t.mine){ t.plays++; fetch(API_BASE + "/api/play/" + t.id, {method: "POST"}).catch(() => {}); }
-  document.querySelectorAll(".track").forEach((el, k) => el.classList.toggle("now", k === i));
-  if ("mediaSession" in navigator){
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: t.name, artist: t.artist_name, artwork: t.image ? [{src: t.image, sizes: "200x200"}] : []
-    });
+function patchRow(id){
+  const t = byId.get(id), el = $("list").querySelector(`.track[data-id="${id}"]`);
+  if (!t || !el) return;
+  el.querySelector(".sub").innerHTML = sub(t);
+  const lk = el.querySelector(".like");
+  lk.classList.toggle("on", t.liked); lk.setAttribute("aria-pressed", t.liked);
+  lk.querySelector(".h").textContent = t.liked ? "❤" : "🤍";
+  lk.querySelector(".n").textContent = t.likes;
+}
+
+function syncDock(){
+  const t = byId.get(curId), b = $("dLike");
+  b.disabled = !t;
+  b.classList.toggle("on", !!t?.liked);
+  b.textContent = t?.liked ? "❤" : "🤍";
+  b.setAttribute("aria-pressed", !!t?.liked);
+  document.querySelectorAll(".track").forEach(el => el.classList.toggle("now", +el.dataset.id === curId));
+}
+
+/* ---------- Лайки и прослушивания ---------- */
+async function toggleLike(id){
+  const t = byId.get(id); if (!t) return;
+  t.liked = !t.liked; t.likes += t.liked ? 1 : -1;
+  tg?.HapticFeedback?.impactOccurred?.("light");
+  tab === "fav" ? render() : patchRow(id);
+  syncDock();
+  try {
+    const r = await api("/api/like/" + id, {method: "POST"});
+    t.liked = r.liked; t.likes = r.likes;
+  } catch (e) {
+    t.liked = !t.liked; t.likes += t.liked ? 1 : -1;
+    toast("Не получилось поставить лайк");
   }
-  tg?.HapticFeedback?.impactOccurred("light");
+  tab === "fav" ? render() : patchRow(id);
+  syncDock();
 }
-const next = () => play(idx + 1 < queue.length ? idx + 1 : 0);
-const prev = () => audio.currentTime > 4 ? (audio.currentTime = 0) : play(idx > 0 ? idx - 1 : queue.length - 1);
-const toggle = () => { if (idx < 0 && queue.length) return play(0); audio.paused ? audio.play() : audio.pause(); };
 
+function countPlay(id){
+  const t = byId.get(id); if (!t) return;
+  api("/api/play/" + id, {method: "POST"}).then(r => {
+    if (r.counted){ t.plays++; patchRow(id); }
+  }).catch(() => {});
+}
+
+/* ---------- Очередь: перемешивание и повтор ---------- */
+function shuffleArr(a){
+  for (let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function rebuildOrder(startId){
+  order = playIds.slice();
+  if (shuffleOn){
+    shuffleArr(order);
+    const i = order.indexOf(startId);
+    if (i > 0){ order.splice(i, 1); order.unshift(startId); }
+  }
+  pos = order.indexOf(startId);
+}
+
+function playFromList(id){
+  playIds = viewList().map(t => t.id);
+  rebuildOrder(id);
+  playTrack(id);
+}
+
+function playTrack(id){
+  const t = byId.get(id); if (!t) return;
+  curId = id; counted = false;
+  audio.src = API_BASE + "/api/stream/" + id;
+  audio.play().catch(() => {});
+  $("title").textContent = t.title;
+  $("artist").textContent = t.performer;
+  $("cover").src = PH;
+  syncDock();
+  if ("mediaSession" in navigator){
+    navigator.mediaSession.metadata = new MediaMetadata({title: t.title, artist: t.performer});
+  }
+  tg?.HapticFeedback?.impactOccurred?.("light");
+}
+
+function step(dir, auto = false){
+  if (!order.length) return;
+  for (let k = 0; k < order.length; k++){
+    let np = pos + dir;
+    if (np >= order.length){
+      if (auto && repeat === "off") return;
+      if (shuffleOn) shuffleArr(order);
+      np = 0;
+    }
+    if (np < 0) np = order.length - 1;
+    pos = np;
+    if (byId.has(order[pos])) return playTrack(order[pos]);
+  }
+}
+const next = () => step(1);
+const prev = () => audio.currentTime > 4 ? (audio.currentTime = 0) : step(-1);
+const toggle = () => {
+  if (curId == null){ const l = viewList(); if (l.length) playFromList(l[0].id); return; }
+  audio.paused ? audio.play() : audio.pause();
+};
+
+function syncModes(){
+  const sh = $("shuffle"), rp = $("repeat");
+  sh.classList.toggle("on", shuffleOn); sh.setAttribute("aria-pressed", shuffleOn);
+  rp.classList.toggle("on", repeat !== "off");
+  rp.textContent = repeat === "one" ? "🔂" : "🔁";
+  rp.setAttribute("aria-label", repeat === "one" ? "Повтор: один трек" : repeat === "all" ? "Повтор: весь плейлист" : "Повтор выключен");
+}
+$("shuffle").onclick = () => {
+  shuffleOn = !shuffleOn; store.set("angel_shuffle", shuffleOn ? "1" : "0");
+  if (curId != null && playIds.includes(curId)) rebuildOrder(curId);
+  syncModes(); toast(shuffleOn ? "Перемешивание включено" : "Перемешивание выключено");
+};
+$("repeat").onclick = () => {
+  repeat = repeat === "all" ? "one" : repeat === "one" ? "off" : "all";
+  store.set("angel_repeat", repeat); syncModes();
+  toast(repeat === "all" ? "Повтор: весь плейлист" : repeat === "one" ? "Повтор: один трек" : "Повтор выключен");
+};
+syncModes();
+
+/* ---------- Кнопки и события ---------- */
 $("play").onclick = toggle;
 $("next").onclick = next;
 $("prev").onclick = prev;
+$("dLike").onclick = () => curId != null && toggleLike(curId);
 $("volBtn").onclick = () => $("volRow").classList.toggle("open");
+
+$("list").addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const id = +b.closest(".track").dataset.id;
+  b.dataset.act === "like" ? toggleLike(id) : playFromList(id);
+});
+$("chips").addEventListener("click", e => {
+  const c = e.target.closest(".chip"); if (!c) return;
+  document.querySelectorAll(".chip").forEach(x => x.classList.toggle("on", x === c));
+  tab = c.dataset.tab; render();
+  if (tab === "wave") loadAll(true);   // подтянуть свежие лайки и пересортировать
+});
+$("q").addEventListener("input", e => { term = e.target.value; render(); });
 
 audio.addEventListener("play",  () => { $("play").textContent = "⏸"; $("planet").classList.add("spin"); });
 audio.addEventListener("pause", () => { $("play").textContent = "▶"; $("planet").classList.remove("spin"); });
 audio.addEventListener("playing", () => { failStreak = 0; });
-audio.addEventListener("ended", next);
+audio.addEventListener("ended", () => {
+  if (repeat === "one"){ counted = false; audio.currentTime = 0; audio.play().catch(() => {}); }
+  else step(1, true);
+});
 audio.addEventListener("error", () => {
   failStreak++;
-  if (failStreak >= Math.min(queue.length, 3)){ toast("Трек не загрузился. Проверь интернет."); failStreak = 0; return; }
+  if (failStreak >= Math.min(order.length || 1, 3)){ toast("Трек не загрузился. Проверь интернет."); failStreak = 0; return; }
   toast("Этот трек недоступен, включаю следующий");
   setTimeout(next, 700);
 });
 audio.addEventListener("loadedmetadata", () => { $("dur").textContent = fmt(audio.duration); });
 audio.addEventListener("timeupdate", () => {
-  const d = audio.duration || 0, c = audio.currentTime;
-  const pct = d ? c / d : 0;
+  const d = audio.duration || 0, c = audio.currentTime, pct = d ? c / d : 0;
   $("cur").textContent = fmt(c);
   if (!seeking){ $("seek").value = pct * 1000; setFill($("seek"), pct * 100); }
   $("arc").style.strokeDashoffset = 188.5 * (1 - pct);
   $("moon").style.transform = `rotate(${pct * 360}deg)`;
+  /* прослушивание засчитывается через 15 секунд (или на середине короткого трека) */
+  if (!counted && curId != null && c >= Math.min(15, (d || 30) / 2)){ counted = true; countPlay(curId); }
 });
 
 let seeking = false;
@@ -306,6 +458,7 @@ const vl = $("vol");
 vl.addEventListener("input", () => { audio.volume = vl.value / 100; setFill(vl, vl.value);
   $("volBtn").textContent = vl.value == 0 ? "🔇" : "🔊"; });
 setFill(vl, 80);
+$("cover").src = PH;
 
 if ("mediaSession" in navigator){
   navigator.mediaSession.setActionHandler("play", () => audio.play());
@@ -313,23 +466,6 @@ if ("mediaSession" in navigator){
   navigator.mediaSession.setActionHandler("nexttrack", next);
   navigator.mediaSession.setActionHandler("previoustrack", prev);
 }
-
-/* ---------- Жанры и форма ---------- */
-$("chips").innerHTML = GENRES.map(([n, g], i) =>
-  `<button class="chip${i === 0 ? " on" : ""}" data-g="${g}">${n}</button>`).join("");
-$("chips").addEventListener("click", e => {
-  const c = e.target.closest(".chip"); if (!c) return;
-  document.querySelectorAll(".chip").forEach(x => x.classList.toggle("on", x === c));
-  tag = c.dataset.g; $("q").value = ""; load("", tag);
-});
-$("form").addEventListener("submit", e => {
-  e.preventDefault();
-  const q = $("q").value.trim(); if (!q) return;
-  $("q").blur();
-  document.querySelectorAll(".chip").forEach(x => x.classList.remove("on"));
-  tag = "";
-  load(q, "");
-});
 
 /* ---------- Звёздное небо ---------- */
 (function sky(){
@@ -359,11 +495,10 @@ $("form").addEventListener("submit", e => {
   size(); requestAnimationFrame(frame);
 })();
 
-load("", tag);
-/* Вернулся из чата после добавления трека — список обновляется сам */
-document.addEventListener("visibilitychange", () => {
-  if (!document.hidden && tag === "my" && API_BASE) loadPlaylist(true);
-});
+/* ---------- Старт и автообновление ---------- */
+loadAll();
+setInterval(() => { if (!document.hidden) loadAll(true); }, 45000);  // чужие лайки и новая сортировка
+document.addEventListener("visibilitychange", () => { if (!document.hidden) loadAll(true); });
 </script>
 </body>
 </html>
