@@ -321,7 +321,7 @@ const stats = t => `▶ ${t.plays} · ❤ ${t.likes}`;
 const coverHtml = (t, extra = "") => {
   const g = GR[t.id % GR.length];
   return `<span class="cv" style="--c1:${g[0]};--c2:${g[1]}"><span class="note">♪</span>` +
-    (t.has_cover ? `<img src="${API_BASE}/api/cover/${t.id}" alt="" loading="lazy" onerror="this.remove()">` : "") + extra + `</span>`;
+    (t.has_cover ? `<img src="${API_BASE}/api/cover/${t.id}?v=${t.cover_v}" alt="" loading="lazy" onerror="this.remove()">` : "") + extra + `</span>`;
 };
 
 /* ---------- Загрузка плейлиста ---------- */
@@ -451,7 +451,7 @@ function playTrack(id){
   if ("mediaSession" in navigator){
     navigator.mediaSession.metadata = new MediaMetadata({
       title: t.title, artist: t.performer,
-      artwork: t.has_cover ? [{src: API_BASE + "/api/cover/" + id, sizes: "320x320", type: "image/jpeg"}] : []
+      artwork: t.has_cover ? [{src: API_BASE + "/api/cover/" + id + "?v=" + t.cover_v, sizes: "320x320", type: "image/jpeg"}] : []
     });
   }
   tg?.HapticFeedback?.impactOccurred?.("light");
