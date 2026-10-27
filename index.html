@@ -7,189 +7,281 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Marck+Script&display=swap" rel="stylesheet">
 <style>
-:root{
-  --void:#070816; --nebula:#6c4cff; --aurora:#3ee6d0; --star:#f2f4ff; --planet:#ff9f6b; --heart:#ff5c8a;
-  --glass:rgba(20,22,52,.72); --line:rgba(160,170,255,.16); --dim:#9aa0d0;
-}
+:root{--star:#f7f5ff;--dim:#a6a5ee;--line:rgba(111,139,255,.34);--w:480px;
+  --glass:linear-gradient(110deg,rgba(25,49,130,.50),rgba(110,43,178,.22))}
 *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%}
-body{
-  background:radial-gradient(ellipse at 20% 0%,#1a1250 0%,transparent 55%),
-             radial-gradient(ellipse at 90% 40%,#0d2a4a 0%,transparent 50%),var(--void);
-  color:var(--star);font-family:Manrope,system-ui,sans-serif;
-  padding:env(safe-area-inset-top) 0 0;
-}
-canvas#sky{position:fixed;inset:0;width:100%;height:100%;z-index:0}
-main{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:18px 16px 230px}
-h1{font:700 28px Unbounded,sans-serif;letter-spacing:.5px;margin-bottom:14px}
-.search input{
-  width:100%;padding:14px 16px;border-radius:16px;border:1px solid var(--line);
-  background:var(--glass);color:var(--star);font:600 16px Manrope,sans-serif;outline:none;
-}
-.search input:focus-visible,button:focus-visible{outline:2px solid var(--aurora);outline-offset:2px}
-.search input::placeholder{color:var(--dim)}
-.chips{display:flex;gap:8px;padding:14px 0 6px}
-.chip{
-  flex:1;padding:11px 15px;border-radius:999px;border:1px solid var(--line);
-  background:transparent;color:var(--dim);font:600 15px Manrope,sans-serif;cursor:pointer
-}
-.chip.on{background:var(--aurora);color:#04131a;border-color:var(--aurora)}
-#sum{font-size:13px;color:var(--dim);padding:8px 4px 0}
-#list{margin-top:6px}
-.track{display:flex;align-items:center;gap:4px;border-radius:16px}
-.track.now{background:rgba(62,230,208,.1)}
-.track .open{
-  flex:1;min-width:0;display:flex;align-items:center;gap:12px;padding:10px;border-radius:16px;
-  border:0;background:transparent;color:inherit;text-align:left;cursor:pointer;font-family:inherit
-}
-.track .open:active{background:rgba(108,76,255,.18)}
-.track img{width:52px;height:52px;border-radius:50%;object-fit:cover;background:#1b1d4a;flex:none}
-.track .t{flex:1;min-width:0}
-.track b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.track .sub{display:block;font-size:13px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.track time{font-size:13px;color:var(--dim)}
-.like{
-  flex:none;min-width:52px;height:48px;border:0;border-radius:14px;background:transparent;color:var(--dim);
-  font:600 13px Manrope,sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px
-}
-.like .h{font-size:18px;line-height:1}
-.like.on{color:var(--heart)}
-.note{color:var(--dim);text-align:center;padding:36px 12px;line-height:1.5}
+html,body{min-height:100%}
+body{background:#03071b;color:var(--star);font-family:Manrope,-apple-system,"Segoe UI",Arial,sans-serif;padding-top:env(safe-area-inset-top)}
+button{font-family:inherit;color:inherit}
+.ic{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic.fill{fill:currentColor}
 
-/* Плеер-док */
-#dock{
-  position:fixed;left:0;right:0;bottom:0;z-index:5;
-  padding:12px 16px calc(12px + env(safe-area-inset-bottom));
-  background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
-  border-top:1px solid var(--line);
-}
-.dock-in{max-width:560px;margin:0 auto}
-.row{display:flex;align-items:center;gap:12px}
-.planet{position:relative;width:64px;height:64px;flex:none}
-.planet img{position:absolute;inset:8px;width:48px;height:48px;border-radius:50%;object-fit:cover;background:#1b1d4a}
-.planet.spin img{animation:spin 14s linear infinite}
-.planet svg{position:absolute;inset:0;width:64px;height:64px}
-.orbit{fill:none;stroke:var(--line);stroke-width:2}
-.arc{fill:none;stroke:var(--aurora);stroke-width:2;stroke-linecap:round;transform:rotate(-90deg);transform-origin:32px 32px}
-.moon{transform-origin:32px 32px}
-.moon circle{fill:var(--planet)}
-.info{flex:1;min-width:0}
-.info b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.info span{display:block;font-size:13px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ctl{display:flex;align-items:center;gap:4px}
-.ctl button{
-  width:44px;height:44px;border-radius:50%;border:0;background:transparent;color:var(--star);
-  font-size:20px;cursor:pointer
-}
-.ctl #play{background:var(--nebula);width:50px;height:50px;font-size:22px}
-.seek{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:12px;color:var(--dim)}
-.seek time{width:36px;text-align:center}
-.tools{display:flex;justify-content:space-between;margin-top:4px}
-.tool{
-  min-width:56px;height:40px;padding:0 10px;border-radius:12px;border:0;background:transparent;color:var(--dim);
-  font:600 14px Manrope,sans-serif;cursor:pointer;opacity:.8
-}
-.tool.on{color:var(--aurora);opacity:1}
-.tool:disabled{opacity:.35;cursor:default}
-#dLike.on{color:var(--heart);opacity:1}
-input[type=range]{
-  -webkit-appearance:none;appearance:none;flex:1;height:28px;background:transparent;cursor:pointer
-}
-input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:4px;background:linear-gradient(90deg,var(--aurora) var(--p,0%),rgba(160,170,255,.25) var(--p,0%))}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--star);margin-top:-6px}
-input[type=range]::-moz-range-track{height:4px;border-radius:4px;background:rgba(160,170,255,.25)}
-input[type=range]::-moz-range-progress{height:4px;border-radius:4px;background:var(--aurora)}
-input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radius:50%;background:var(--star)}
-#volRow{display:none}
-#volRow.open{display:flex}
-#toast{
-  position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translateX(-50%) translateY(-90px);
-  z-index:9;background:#2a1d5a;border:1px solid var(--nebula);padding:10px 16px;border-radius:14px;
-  font-size:14px;transition:transform .25s;max-width:90%;text-align:center
-}
+/* Фон из макета. Картинка-баннер: assets/bg.jpg рядом с bot.py */
+#bg{position:fixed;inset:0;z-index:0;background:
+  radial-gradient(ellipse at 76% 14%,rgba(255,133,244,.34),transparent 23%),
+  radial-gradient(ellipse at 22% 9%,rgba(78,63,255,.55),transparent 28%),
+  radial-gradient(ellipse at 72% 55%,rgba(84,39,220,.30),transparent 35%),
+  linear-gradient(115deg,transparent 55%,rgba(169,65,255,.12),transparent 70%),
+  linear-gradient(155deg,#141047 0%,#070d31 46%,#020718 100%)}
+#bg::before{content:"";position:absolute;left:0;right:0;top:0;height:240px;background:var(--bgimg,none) 68% 0/cover no-repeat;opacity:.8;filter:brightness(.8);
+  -webkit-mask-image:linear-gradient(#000 45%,transparent);mask-image:linear-gradient(#000 45%,transparent)}
+#bg::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.9;background:
+  radial-gradient(2px 2px at 18% 45%,#fff,transparent 70%),radial-gradient(2px 2px at 83% 52%,#fff,transparent 70%),
+  radial-gradient(1.5px 1.5px at 57% 62%,#fff,transparent 70%),radial-gradient(2px 2px at 25% 74%,#fff,transparent 70%),
+  radial-gradient(2px 2px at 89% 80%,#fff,transparent 70%),radial-gradient(1.5px 1.5px at 8% 90%,#fff,transparent 70%)}
+
+main{position:relative;z-index:1;max-width:var(--w);margin:0 auto;padding:22px 15px 250px}
+
+/* Шапка */
+.head{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.ava{position:relative;width:88px;height:88px;flex:none}
+.ava .ring{width:100%;height:100%;border-radius:50%;overflow:hidden;border:2px solid #a04aff;
+  box-shadow:0 0 16px #6d36ff,inset 0 0 18px #a02aff;background:linear-gradient(145deg,#4130a2,#080d30 65%,#e45cff);display:grid;place-items:center;font-size:36px}
+.ava img{width:100%;height:100%;object-fit:cover;display:block}
+.ava .dot{position:absolute;right:1px;bottom:5px;width:15px;height:15px;border-radius:50%;background:#fff;border:3px solid #cb8cff;box-shadow:0 0 10px #d35dff}
+.who{flex:1;min-width:0}
+.who{text-shadow:0 1px 10px rgba(4,4,28,.95)}
+.who h1{font-weight:700;font-size:clamp(19px,5.6vw,23px);line-height:1.15;overflow:hidden;text-overflow:ellipsis}
+.role{display:flex;align-items:center;gap:6px;color:#b5b3f6;font-weight:500;font-size:12px;margin-top:4px;white-space:nowrap}
+.role .badge{width:15px;height:15px;flex:none}
+.tag{display:block;margin-top:5px;font-family:"Marck Script",cursive;font-size:14px;line-height:1.2;color:#b36bff}
+.tag .ic{display:inline;width:15px;height:15px;stroke:#d9c2ff;vertical-align:-2px;margin-left:4px}
+.count{flex:none;display:flex;align-items:center;gap:7px;padding:12px 11px;border-radius:20px;border:1px solid var(--line);
+  background:var(--glass);box-shadow:inset 0 0 22px rgba(255,255,255,.04);font-weight:600;font-size:13px;cursor:pointer;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.count .ic{width:20px;height:20px;color:#b995ff}
+.count .ch{width:14px;height:14px;color:#c7c5f7}
+
+/* Поиск и вкладки */
+.search{height:52px;display:flex;align-items:center;gap:13px;padding:0 19px;border:1px solid rgba(94,151,255,.9);border-radius:24px;
+  background:rgba(9,18,59,.67);box-shadow:0 0 18px rgba(64,103,255,.24),inset 0 0 18px rgba(255,255,255,.05);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);margin-bottom:15px}
+.search .ic{width:22px;height:22px;color:#c9c7f7}
+.search input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--star);font:500 15px Manrope,sans-serif}
+.search input::placeholder{color:#a9a8f0}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
+.tab{height:52px;display:flex;align-items:center;justify-content:center;gap:9px;border:1px solid rgba(128,99,255,.6);border-radius:30px;
+  background:rgba(10,18,57,.58);color:#d0cdfd;font-weight:600;font-size:14px;cursor:pointer;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.tab .ic{width:23px;height:23px}
+.tab.on{background:linear-gradient(110deg,#2558ff,#7d22f8 75%,#d53eff);border-color:#d19cff;color:#fff;
+  box-shadow:0 0 18px rgba(152,50,255,.6),inset 0 0 10px rgba(255,255,255,.25)}
+.search:focus-within,.tab:focus-visible,button:focus-visible{outline:2px solid #b995ff;outline-offset:2px}
+
+/* Треки */
+.track{display:flex;align-items:center;margin-bottom:8px;min-height:76px;border-radius:22px;border:1px solid rgba(83,118,232,.3);
+  background:linear-gradient(110deg,rgba(8,18,54,.80),rgba(22,35,83,.52));box-shadow:inset 0 0 14px rgba(255,255,255,.025);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.track.now{border:1.5px solid #b44aff;box-shadow:0 0 15px rgba(151,52,255,.6),inset 0 0 18px rgba(104,65,255,.12)}
+.open{flex:1;min-width:0;display:flex;align-items:center;gap:12px;padding:9px 4px 9px 11px;border:0;background:transparent;text-align:left;cursor:pointer;border-radius:22px}
+.cv{position:relative;display:grid;place-items:center;width:56px;height:56px;border-radius:14px;overflow:hidden;flex:none;
+  background:linear-gradient(135deg,var(--c1),var(--c2));border:1px solid rgba(127,148,255,.7);box-shadow:0 0 10px rgba(116,76,255,.2)}
+.cv img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cv .note{font-size:22px;color:#fff;opacity:.85}
+.eq{display:none;position:absolute;right:5px;bottom:5px;gap:2px;height:15px;align-items:flex-end}
+.track.now .eq{display:flex}
+.eq i{display:block;width:3px;height:6px;border-radius:2px;background:#e0c8ff;box-shadow:0 0 6px #a78bfa}
+body.playing .eq i{animation:eq .9s ease-in-out infinite}
+.eq i:nth-child(2){animation-delay:.25s!important}.eq i:nth-child(3){animation-delay:.5s!important}
+@keyframes eq{0%,100%{height:4px}50%{height:15px}}
+.t{flex:1;min-width:0}
+.t b{display:block;font-size:15px;font-weight:700;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.art{display:block;font-size:12.5px;color:#a9a8ed;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px}
+.st{display:block;font-size:11px;color:#8785c4;font-weight:500;margin-top:3px}
+.open time{font-size:12.5px;color:#b2b0f4;font-weight:500;flex:none}
+.like,.more{flex:none;width:42px;height:48px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer;color:#bba2ff;border-radius:14px}
+.more{width:34px;margin-right:6px;color:#c3c0ee}
+.like .ic{width:26px;height:26px}
+.like.on{color:#c9a8ff}
+.like.on .ic{filter:drop-shadow(0 0 7px #8b5cf6)}
+.note-empty{color:var(--dim);text-align:center;padding:40px 14px;line-height:1.55;font-weight:600}
+
+/* Мини-плеер (над нижним меню) */
+#dock{position:fixed;left:0;right:0;bottom:calc(76px + env(safe-area-inset-bottom));z-index:5;padding:0 10px}
+.dock-in{position:relative;max-width:var(--w);margin:0 auto}
+.mp{border-radius:25px;border:1px solid rgba(155,113,255,.72);padding:12px 13px 10px;
+  background:linear-gradient(110deg,rgba(12,17,58,.96),rgba(26,19,75,.93));
+  backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);box-shadow:0 0 24px rgba(111,54,255,.25),inset 0 0 20px rgba(255,255,255,.045)}
+.mrow{display:flex;align-items:center;gap:10px}
+#dCover .cv{width:52px;height:52px;border-radius:14px}
+.mi{flex:1;min-width:0}
+.mi b{display:block;font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mi span{display:block;font-size:12px;color:#aaa7ef;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.mc{display:flex;align-items:center;gap:2px}
+.mc button{width:34px;height:44px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer;color:#f7f5ff;border-radius:50%}
+.mc .ic.fill{stroke:none}
+#play{width:48px;height:48px;border:2px solid #b66bff;box-shadow:0 0 16px rgba(157,66,255,.7),inset 0 0 10px rgba(139,92,246,.35);margin:0 3px}
+#play .ic{width:22px;height:22px}
+.mseek{display:flex;align-items:center;gap:10px;margin-top:8px}
+.mseek time{font-size:11px;color:#b5b2f5;font-weight:500;min-width:34px;text-align:right}
+.cur{font-size:11px;color:#b5b2f5;font-weight:500;margin-top:-6px;display:block}
+input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:24px;background:transparent;cursor:pointer;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:4px;background:linear-gradient(90deg,#765aff,#f15cff var(--p,0%),#393b83 var(--p,0%))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#d9c8ff;margin-top:-5px;box-shadow:0 0 10px #c45cff}
+input[type=range]::-moz-range-track{height:4px;border-radius:4px;background:#393b83}
+input[type=range]::-moz-range-progress{height:4px;border-radius:4px;background:#b25cff}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border:0;border-radius:50%;background:#d9c8ff}
+
+#pop{display:none;position:absolute;right:0;bottom:calc(100% + 10px);gap:4px;align-items:center;padding:8px 10px;border-radius:22px;
+  border:1px solid rgba(155,113,255,.6);background:linear-gradient(110deg,rgba(18,22,74,.97),rgba(34,22,92,.97));
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 8px 30px rgba(5,4,30,.7)}
+#pop.open{display:flex}
+.pb{position:relative;width:44px;height:44px;border:0;border-radius:14px;background:transparent;display:grid;place-items:center;cursor:pointer;color:#a9a5f1}
+.pb.on{color:#d2b8ff;background:rgba(139,92,246,.22)}
+.pb:disabled{opacity:.35;cursor:default}
+.pb .one{position:absolute;right:7px;top:6px;font-size:10px;font-weight:800;display:none}
+.pb.one .one{display:block}
+#pop input[type=range]{width:90px;flex:none}
+
+/* Нижнее меню */
+.nav{position:fixed;z-index:6;bottom:calc(10px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(calc(100vw - 16px),var(--w));height:57px;
+  border:1px solid rgba(151,118,255,.7);border-radius:28px;background:rgba(10,13,49,.9);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+  box-shadow:0 0 20px rgba(101,65,255,.3);display:grid;grid-template-columns:repeat(5,1fr);align-items:center}
+.nav-item{position:relative;height:100%;border:0;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  color:#a9a5f1;font:600 10px Manrope,sans-serif;cursor:pointer}
+.nav-item .ic{width:22px;height:22px}
+.nav-item.active{color:#bd6bff}
+.nav-item.active .ic{filter:drop-shadow(0 0 6px #a442ff)}
+.nav-item.active::after{content:"";position:absolute;bottom:3px;width:26px;height:3px;border-radius:3px;background:#b25cff;box-shadow:0 0 8px #a442ff}
+.nav-center .circle{width:46px;height:46px;border-radius:50%;border:1px solid #b75bff;background:radial-gradient(circle,#3f37bd,#100b3e);
+  box-shadow:0 0 16px #813cff;display:grid;place-items:center;color:#d9b8ff}
+.nav-center .ic{width:24px;height:24px}
+body.playing .nav-center .circle{animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 14px #813cff}50%{box-shadow:0 0 26px #b05cff}}
+
+.sheet{position:fixed;inset:0;z-index:20;display:none;place-items:center;padding:20px;background:rgba(3,5,25,.62);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.sheet.open{display:grid}
+.card{width:min(340px,100%);padding:20px;border-radius:26px;border:1px solid rgba(155,113,255,.6);background:linear-gradient(110deg,rgba(18,22,74,.98),rgba(34,22,92,.98));box-shadow:0 0 30px rgba(111,54,255,.35)}
+.card h2{font-size:20px;font-weight:700;margin-bottom:12px}
+.pfrow{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid rgba(111,139,255,.2);font-size:14px;color:#cfcdf8}
+.pfrow b{color:#fff}
+#sheetClose{margin-top:16px;width:100%;height:46px;border:0;border-radius:23px;background:linear-gradient(110deg,#2558ff,#7d22f8 75%,#d53eff);font:700 15px Manrope,sans-serif;color:#fff;cursor:pointer}
+
+#toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translateX(-50%) translateY(-90px);z-index:30;
+  background:#2a1d5a;border:1px solid #8b5cf6;padding:10px 16px;border-radius:14px;font-size:14px;font-weight:600;
+  transition:transform .25s;max-width:90%;text-align:center}
 #toast.show{transform:translateX(-50%) translateY(0)}
-@keyframes spin{to{transform:rotate(360deg)}}
-@media (prefers-reduced-motion:reduce){.planet.spin img{animation:none}}
+@media (prefers-reduced-motion:reduce){body.playing .eq i,body.playing .nav-center .circle{animation:none}}
 </style>
 </head>
 <body>
-<canvas id="sky"></canvas>
+<div id="bg"></div>
 <div id="toast" role="status"></div>
 
 <main>
-  <h1>Ангел</h1>
-  <div class="search">
-    <input id="q" type="search" placeholder="Поиск по плейлисту" autocomplete="off" aria-label="Поиск по плейлисту">
+  <header class="head">
+    <div class="ava">
+      <div class="ring"><img id="ava" alt="" onerror="this.replaceWith(document.createTextNode('👼'))"></div>
+      <span class="dot"></span>
+    </div>
+    <div class="who">
+      <h1 id="name">angell_beto</h1>
+      <div class="role"><span>мини-приложение</span>
+        <svg class="badge" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10" fill="#8b5cf6"/><path d="M5 13.5V8l2.6 2.4L10 6.5l2.4 3.9L15 8v5.5z" fill="#fff"/></svg>
+      </div>
+      <div class="tag"><span id="tag">Музыка делает жизнь красивее…</span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.7 7.8 3.7 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.3 0 5.3 3.3 4.2 6.7C19.5 15.9 12 20.5 12 20.5z"/></svg></div>
+    </div>
+    <button class="count" id="count" aria-label="К списку треков">
+      <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10v4M7 7v10M11 3v18M15 7v10M19 9v6"/></svg>
+      <span id="cnt">0 треков</span>
+      <svg class="ic ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+    </button>
+  </header>
+
+  <label class="search">
+    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+    <input id="q" type="search" placeholder="Поиск по плейлисту…" autocomplete="off" aria-label="Поиск по плейлисту">
+  </label>
+
+  <div class="tabs" id="chips">
+    <button class="tab on" data-tab="wave">
+      <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10v4M7 7v10M11 3v18M15 7v10M19 9v6"/></svg>Волна</button>
+    <button class="tab" data-tab="fav">
+      <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.7 7.8 3.7 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.3 0 5.3 3.3 4.2 6.7C19.5 15.9 12 20.5 12 20.5z"/></svg>Избранное</button>
   </div>
-  <div class="chips" id="chips">
-    <button class="chip on" data-tab="wave">🌊 Волна</button>
-    <button class="chip" data-tab="fav">❤ Избранное</button>
-  </div>
-  <div id="sum"></div>
+
   <div id="list"></div>
 </main>
 
 <section id="dock" aria-label="Плеер">
   <div class="dock-in">
-    <div class="row">
-      <div class="planet" id="planet">
-        <svg viewBox="0 0 64 64" aria-hidden="true">
-          <circle class="orbit" cx="32" cy="32" r="30"/>
-          <circle class="arc" id="arc" cx="32" cy="32" r="30" stroke-dasharray="188.5" stroke-dashoffset="188.5"/>
-          <g class="moon" id="moon"><circle cx="32" cy="2" r="3.5"/></g>
-        </svg>
-        <img id="cover" alt="">
-      </div>
-      <div class="info">
-        <b id="title">Выбери трек</b>
-        <span id="artist">Нажми на любую песню в списке</span>
-      </div>
-      <div class="ctl">
-        <button id="prev" aria-label="Предыдущий">⏮</button>
-        <button id="play" aria-label="Играть">▶</button>
-        <button id="next" aria-label="Следующий">⏭</button>
-      </div>
-    </div>
-    <div class="seek">
-      <time id="cur">0:00</time>
-      <input type="range" id="seek" min="0" max="1000" value="0" aria-label="Перемотка">
-      <time id="dur">0:00</time>
-    </div>
-    <div class="tools">
-      <button class="tool" id="shuffle" aria-label="Перемешать" aria-pressed="false">🔀</button>
-      <button class="tool" id="dLike" aria-label="В избранное" disabled>🤍</button>
-      <button class="tool" id="repeat" aria-label="Повтор">🔁</button>
-      <button class="tool" id="volBtn" aria-label="Громкость">🔊</button>
-    </div>
-    <div class="seek" id="volRow">
-      <span style="width:36px;text-align:center">🔈</span>
+    <div id="pop">
+      <button class="pb" id="shuffle" aria-label="Перемешать" aria-pressed="false">
+        <svg class="ic" viewBox="0 0 24 24"><path d="M3 7h3c3.5 0 4.5 10 8.5 10H18M3 17h3c1.4 0 2.4-1.7 3.4-3.6M14 7h4M18 4l3 3-3 3M18 14l3 3-3 3"/></svg></button>
+      <button class="pb" id="repeat" aria-label="Повтор">
+        <svg class="ic" viewBox="0 0 24 24"><path d="M17 3l3 3-3 3M4 11V9a3 3 0 013-3h13M7 21l-3-3 3-3M20 13v2a3 3 0 01-3 3H4"/></svg><span class="one">1</span></button>
+      <button class="pb" id="dLike" aria-label="В избранное" disabled>
+        <svg class="ic" viewBox="0 0 24 24"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.7 7.8 3.7 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.3 0 5.3 3.3 4.2 6.7C19.5 15.9 12 20.5 12 20.5z"/></svg></button>
       <input type="range" id="vol" min="0" max="100" value="80" aria-label="Громкость">
-      <span style="width:36px;text-align:center">🔊</span>
+    </div>
+    <div class="mp">
+      <div class="mrow">
+        <div id="dCover"></div>
+        <div class="mi"><b id="title">Выбери трек</b><span id="artist">Нажми на песню в списке</span></div>
+        <div class="mc">
+          <button id="prev" aria-label="Предыдущий"><svg class="ic fill" viewBox="0 0 24 24"><rect x="5" y="5" width="2.6" height="14" rx="1"/><path d="M19 5.5v13L9 12z"/></svg></button>
+          <button id="play" aria-label="Играть"></button>
+          <button id="next" aria-label="Следующий"><svg class="ic fill" viewBox="0 0 24 24"><rect x="16.4" y="5" width="2.6" height="14" rx="1"/><path d="M5 5.5v13L15 12z"/></svg></button>
+          <button id="qBtn" aria-label="Режимы и громкость"><svg class="ic" viewBox="0 0 24 24"><path d="M4 6h11M4 11h11M4 16h6"/><path d="M19 17V8l3 1"/><circle cx="17" cy="17.5" r="2.2"/></svg></button>
+        </div>
+      </div>
+      <div class="mseek">
+        <input type="range" id="seek" min="0" max="1000" value="0" aria-label="Перемотка">
+        <time id="dur">0:00</time>
+      </div>
+      <time class="cur" id="cur">0:00</time>
     </div>
   </div>
 </section>
 
+<nav class="nav" id="nav" aria-label="Меню">
+  <button class="nav-item active" data-nav="home"><svg class="ic" viewBox="0 0 24 24"><path d="M3 11l9-7.5 9 7.5M5.5 9.5V20h5v-5.5h3V20h5V9.5"/></svg>Главная</button>
+  <button class="nav-item" data-nav="search"><svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Поиск</button>
+  <button class="nav-item nav-center" data-nav="play" aria-label="Играть или пауза"><span class="circle"><svg class="ic" viewBox="0 0 24 24"><path d="M3 10v4M7 7v10M11 3v18M15 7v10M19 9v6"/></svg></span></button>
+  <button class="nav-item" data-nav="fav"><svg class="ic" viewBox="0 0 24 24"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.7 7.8 3.7 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.3 0 5.3 3.3 4.2 6.7C19.5 15.9 12 20.5 12 20.5z"/></svg>Избранное</button>
+  <button class="nav-item" data-nav="me"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4.2 4-6 8-6s7 1.8 8 6"/></svg>Профиль</button>
+</nav>
+
+<div class="sheet" id="sheet" role="dialog" aria-label="Профиль">
+  <div class="card"><h2>Профиль</h2><div id="pf"></div><button id="sheetClose">Закрыть</button></div>
+</div>
+
 <script>
 /* Адрес API. Если сайт открыт с адреса бота — ничего менять не надо.
-   Если сайт лежит на GitHub Pages, впиши сюда адрес бота: "https://что-то.trycloudflare.com" */
+   Если сайт лежит на GitHub Pages, впиши сюда адрес бота: "https://что-то.ngrok-free.dev" */
 const DEFAULT_API = "";
 const API_BASE = (new URLSearchParams(location.search).get("api") || DEFAULT_API ||
   (location.protocol.startsWith("http") && !/\.github\.io$/.test(location.hostname) ? location.origin : "")).replace(/\/$/, "");
-const PH = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6c4cff"/><stop offset="1" stop-color="#3ee6d0"/></linearGradient></defs><rect width="52" height="52" fill="url(#g)"/><text x="26" y="34" font-size="24" text-anchor="middle">🎵</text></svg>');
+/* Оформление шапки. Фон и аватар: положи bg.jpg и avatar.jpg в папку assets рядом с bot.py */
+const APP_NAME = "angell_beto";
+const APP_TAG = "Музыка делает жизнь красивее…";
+
+const ICON = {
+  heart: '<path d="M12 20.5s-7.5-4.6-9.2-9.3C1.7 7.8 3.7 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.3 0 5.3 3.3 4.2 6.7C19.5 15.9 12 20.5 12 20.5z"/>',
+  dots: '<circle cx="5" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.7" fill="currentColor" stroke="none"/>',
+  play: '<path d="M8 5.5v13l11-6.5z"/>',
+  pause: '<rect x="6.5" y="5" width="4" height="14" rx="1.2"/><rect x="13.5" y="5" width="4" height="14" rx="1.2"/>'
+};
+const svg = (p, cls = "") => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true">${p}</svg>`;
+const GR = [["#4b2fd6","#c050ff"],["#1d6fe0","#7a4dff"],["#7c3aed","#ff6fb1"],["#2b2fb8","#19c3d9"],["#5b21b6","#f59e0b"],["#312e81","#a855f7"]];
 
 const tg = window.Telegram?.WebApp;
-if (tg && tg.initData){ tg.ready(); tg.expand(); tg.setHeaderColor?.("#070816"); tg.setBackgroundColor?.("#070816"); }
+if (tg && tg.initData){ tg.ready(); tg.expand(); tg.setHeaderColor?.("#0d0b33"); tg.setBackgroundColor?.("#070a1f"); }
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt = s => { s = Math.floor(s || 0); return Math.floor(s/60) + ":" + String(s%60).padStart(2,"0"); };
 const setFill = (el, pct) => el.style.setProperty("--p", pct + "%");
+const plural = n => { const a = n % 10, b = n % 100; return a === 1 && b !== 11 ? "трек" : a >= 2 && a <= 4 && (b < 12 || b > 14) ? "трека" : "треков"; };
 let toastTimer;
 function toast(msg){
   const t = $("toast"); t.textContent = msg; t.classList.add("show");
   clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2800);
+}
+
+$("name").textContent = APP_NAME; $("tag").textContent = APP_TAG;
+if (API_BASE){
+  $("ava").src = API_BASE + "/assets/avatar.jpg";
+  document.documentElement.style.setProperty("--bgimg", `url("${API_BASE}/assets/bg.jpg")`);
 }
 
 /* ---------- Хранилище настроек (может быть недоступно) ---------- */
@@ -219,21 +311,26 @@ audio.volume = 0.8;
 let all = [];                 // все треки «Волны», самые популярные первыми
 const byId = new Map();
 let tab = "wave", term = "";
-let curId = null, counted = false, failStreak = 0;
+let curId = null, counted = false, failStreak = 0, seeking = false;
 let playIds = [], order = [], pos = -1;      // очередь воспроизведения
 let shuffleOn = store.get("angel_shuffle") === "1";
 let repeat = ["all","one","off"].includes(store.get("angel_repeat")) ? store.get("angel_repeat") : "all";
 
 const popular = (a, b) => b.likes - a.likes || b.plays - a.plays || b.id - a.id;
-const sub = t => `${esc(t.performer)} · ▶ ${t.plays}`;
+const stats = t => `▶ ${t.plays} · ❤ ${t.likes}`;
+const coverHtml = (t, extra = "") => {
+  const g = GR[t.id % GR.length];
+  return `<span class="cv" style="--c1:${g[0]};--c2:${g[1]}"><span class="note">♪</span>` +
+    (t.has_cover ? `<img src="${API_BASE}/api/cover/${t.id}" alt="" loading="lazy" onerror="this.remove()">` : "") + extra + `</span>`;
+};
 
 /* ---------- Загрузка плейлиста ---------- */
 async function loadAll(silent = false){
   if (!API_BASE){
-    $("list").innerHTML = '<p class="note">Не указан адрес бота.<br>Открой сайт по ссылке из Telegram-бота<br>или впиши адрес в DEFAULT_API в index.html.</p>';
+    $("list").innerHTML = '<p class="note-empty">Не указан адрес бота.<br>Открой сайт по ссылке из Telegram-бота<br>или впиши адрес в DEFAULT_API в index.html.</p>';
     return;
   }
-  if (!silent) $("list").innerHTML = '<p class="note">Открываю плейлист…</p>';
+  if (!silent) $("list").innerHTML = '<p class="note-empty">Открываю плейлист…</p>';
   try {
     const data = await api("/api/playlist");
     all = (data.tracks || []).sort(popular);
@@ -241,7 +338,7 @@ async function loadAll(silent = false){
     render(); syncDock();
   } catch (e) {
     if (silent) return;
-    $("list").innerHTML = '<p class="note">Плейлист сейчас недоступен.<br>Бот выключен или нет связи. Попробуй позже.<br><small>' + esc(e.message) + '</small></p>';
+    $("list").innerHTML = '<p class="note-empty">Плейлист сейчас недоступен.<br>Бот выключен или нет связи. Попробуй позже.<br><small>' + esc(e.message) + '</small></p>';
   }
 }
 
@@ -255,24 +352,22 @@ function viewList(){
 function rowHtml(t){
   return `<div class="track${t.id === curId ? " now" : ""}" data-id="${t.id}">
     <button class="open" data-act="play" aria-label="Играть: ${esc(t.title)}">
-      <img src="${PH}" alt="">
-      <div class="t"><b>${esc(t.title)}</b><span class="sub">${sub(t)}</span></div>
+      ${coverHtml(t, '<span class="eq"><i></i><i></i><i></i></span>')}
+      <span class="t"><b>${esc(t.title)}</b><span class="art">${esc(t.performer)}</span><span class="st">${stats(t)}</span></span>
       <time>${fmt(t.duration)}</time>
     </button>
-    <button class="like${t.liked ? " on" : ""}" data-act="like" aria-pressed="${t.liked}" aria-label="Лайк">
-      <span class="h">${t.liked ? "❤" : "🤍"}</span><span class="n">${t.likes}</span>
-    </button>
+    <button class="like${t.liked ? " on" : ""}" data-act="like" aria-pressed="${t.liked}" aria-label="Лайк">${svg(ICON.heart, t.liked ? "fill" : "")}</button>
+    <button class="more" data-act="more" aria-label="Подробнее">${svg(ICON.dots)}</button>
   </div>`;
 }
 
 function render(){
   const l = viewList(), box = $("list");
-  const plays = all.reduce((s, t) => s + t.plays, 0), likes = all.reduce((s, t) => s + t.likes, 0);
-  $("sum").textContent = all.length ? `${all.length} треков · ▶ ${plays} · ❤ ${likes}` : "";
+  $("cnt").textContent = `${all.length} ${plural(all.length)}`;
   if (!l.length){
-    box.innerHTML = term.trim() ? '<p class="note">Ничего не нашлось 🔭</p>'
-      : tab === "fav" ? '<p class="note">Здесь будут песни, которым ты поставил ❤<br>Видишь их только ты.</p>'
-      : '<p class="note">В «Волне» пока пусто 🌑<br>Владелец добавит треки через бота.</p>';
+    box.innerHTML = term.trim() ? '<p class="note-empty">Ничего не нашлось 🔭</p>'
+      : tab === "fav" ? '<p class="note-empty">Здесь будут песни, которым ты поставил ❤<br>Видишь их только ты.</p>'
+      : '<p class="note-empty">В «Волне» пока пусто 🌑<br>Владелец добавит треки через бота.</p>';
     return;
   }
   box.innerHTML = l.map(rowHtml).join("");
@@ -281,18 +376,17 @@ function render(){
 function patchRow(id){
   const t = byId.get(id), el = $("list").querySelector(`.track[data-id="${id}"]`);
   if (!t || !el) return;
-  el.querySelector(".sub").innerHTML = sub(t);
+  el.querySelector(".st").textContent = stats(t);
   const lk = el.querySelector(".like");
   lk.classList.toggle("on", t.liked); lk.setAttribute("aria-pressed", t.liked);
-  lk.querySelector(".h").textContent = t.liked ? "❤" : "🤍";
-  lk.querySelector(".n").textContent = t.likes;
+  lk.querySelector(".ic").classList.toggle("fill", t.liked);
 }
 
 function syncDock(){
   const t = byId.get(curId), b = $("dLike");
   b.disabled = !t;
   b.classList.toggle("on", !!t?.liked);
-  b.textContent = t?.liked ? "❤" : "🤍";
+  b.querySelector(".ic").classList.toggle("fill", !!t?.liked);
   b.setAttribute("aria-pressed", !!t?.liked);
   document.querySelectorAll(".track").forEach(el => el.classList.toggle("now", +el.dataset.id === curId));
 }
@@ -352,10 +446,13 @@ function playTrack(id){
   audio.play().catch(() => {});
   $("title").textContent = t.title;
   $("artist").textContent = t.performer;
-  $("cover").src = PH;
+  $("dCover").innerHTML = coverHtml(t);
   syncDock();
   if ("mediaSession" in navigator){
-    navigator.mediaSession.metadata = new MediaMetadata({title: t.title, artist: t.performer});
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: t.title, artist: t.performer,
+      artwork: t.has_cover ? [{src: API_BASE + "/api/cover/" + id, sizes: "320x320", type: "image/jpeg"}] : []
+    });
   }
   tg?.HapticFeedback?.impactOccurred?.("light");
 }
@@ -385,7 +482,7 @@ function syncModes(){
   const sh = $("shuffle"), rp = $("repeat");
   sh.classList.toggle("on", shuffleOn); sh.setAttribute("aria-pressed", shuffleOn);
   rp.classList.toggle("on", repeat !== "off");
-  rp.textContent = repeat === "one" ? "🔂" : "🔁";
+  rp.classList.toggle("one", repeat === "one");
   rp.setAttribute("aria-label", repeat === "one" ? "Повтор: один трек" : repeat === "all" ? "Повтор: весь плейлист" : "Повтор выключен");
 }
 $("shuffle").onclick = () => {
@@ -401,27 +498,61 @@ $("repeat").onclick = () => {
 syncModes();
 
 /* ---------- Кнопки и события ---------- */
+const setPlayIcon = paused => { $("play").innerHTML = svg(paused ? ICON.play : ICON.pause, "fill"); $("play").setAttribute("aria-label", paused ? "Играть" : "Пауза"); };
+setPlayIcon(true);
 $("play").onclick = toggle;
 $("next").onclick = next;
 $("prev").onclick = prev;
 $("dLike").onclick = () => curId != null && toggleLike(curId);
-$("volBtn").onclick = () => $("volRow").classList.toggle("open");
+$("qBtn").onclick = e => { e.stopPropagation(); $("pop").classList.toggle("open"); };
+document.addEventListener("click", e => { if (!e.target.closest("#pop")) $("pop").classList.remove("open"); });
+$("count").onclick = () => $("list").scrollIntoView({behavior: "smooth"});
 
 $("list").addEventListener("click", e => {
   const b = e.target.closest("[data-act]"); if (!b) return;
   const id = +b.closest(".track").dataset.id;
-  b.dataset.act === "like" ? toggleLike(id) : playFromList(id);
+  if (b.dataset.act === "like") toggleLike(id);
+  else if (b.dataset.act === "more"){ const t = byId.get(id); if (t) toast(`${t.title}: ${stats(t)}`); }
+  else playFromList(id);
 });
+function setTab(t){
+  tab = t;
+  document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x.dataset.tab === t));
+  document.querySelectorAll(".nav-item[data-nav]").forEach(x => x.classList.toggle("active", x.dataset.nav === (t === "fav" ? "fav" : "home")));
+  render();
+  if (t === "wave") loadAll(true);   // подтянуть свежие лайки и пересортировать
+}
 $("chips").addEventListener("click", e => {
-  const c = e.target.closest(".chip"); if (!c) return;
-  document.querySelectorAll(".chip").forEach(x => x.classList.toggle("on", x === c));
-  tab = c.dataset.tab; render();
-  if (tab === "wave") loadAll(true);   // подтянуть свежие лайки и пересортировать
+  const c = e.target.closest(".tab"); if (c) setTab(c.dataset.tab);
+});
+
+/* ---------- Нижнее меню ---------- */
+const toTop = () => window.scrollTo({top: 0, behavior: "smooth"});
+function openProfile(){
+  const plays = all.reduce((s, t) => s + t.plays, 0), likes = all.reduce((s, t) => s + t.likes, 0);
+  $("pf").innerHTML = [
+    ["Треков в «Волне»", all.length], ["Всего прослушиваний", plays],
+    ["Всего лайков", likes], ["Мои лайки (Избранное)", all.filter(t => t.liked).length]
+  ].map(([k, v]) => `<div class="pfrow"><span>${k}</span><b>${v}</b></div>`).join("");
+  $("sheet").classList.add("open");
+}
+$("sheet").addEventListener("click", e => { if (e.target.id === "sheet" || e.target.closest("#sheetClose")) $("sheet").classList.remove("open"); });
+$("nav").addEventListener("click", e => {
+  const b = e.target.closest("[data-nav]"); if (!b) return;
+  const n = b.dataset.nav;
+  if (n === "home"){ setTab("wave"); toTop(); }
+  else if (n === "fav"){ setTab("fav"); toTop(); }
+  else if (n === "search"){
+    document.querySelectorAll(".nav-item[data-nav]").forEach(x => x.classList.toggle("active", x === b));
+    toTop(); setTimeout(() => $("q").focus(), 250);
+  }
+  else if (n === "play") toggle();
+  else if (n === "me") openProfile();
 });
 $("q").addEventListener("input", e => { term = e.target.value; render(); });
 
-audio.addEventListener("play",  () => { $("play").textContent = "⏸"; $("planet").classList.add("spin"); });
-audio.addEventListener("pause", () => { $("play").textContent = "▶"; $("planet").classList.remove("spin"); });
+audio.addEventListener("play",  () => { setPlayIcon(false); document.body.classList.add("playing"); });
+audio.addEventListener("pause", () => { setPlayIcon(true); document.body.classList.remove("playing"); });
 audio.addEventListener("playing", () => { failStreak = 0; });
 audio.addEventListener("ended", () => {
   if (repeat === "one"){ counted = false; audio.currentTime = 0; audio.play().catch(() => {}); }
@@ -436,15 +567,11 @@ audio.addEventListener("error", () => {
 audio.addEventListener("loadedmetadata", () => { $("dur").textContent = fmt(audio.duration); });
 audio.addEventListener("timeupdate", () => {
   const d = audio.duration || 0, c = audio.currentTime, pct = d ? c / d : 0;
-  $("cur").textContent = fmt(c);
-  if (!seeking){ $("seek").value = pct * 1000; setFill($("seek"), pct * 100); }
-  $("arc").style.strokeDashoffset = 188.5 * (1 - pct);
-  $("moon").style.transform = `rotate(${pct * 360}deg)`;
+  if (!seeking){ $("cur").textContent = fmt(c); $("seek").value = pct * 1000; setFill($("seek"), pct * 100); }
   /* прослушивание засчитывается через 15 секунд (или на середине короткого трека) */
   if (!counted && curId != null && c >= Math.min(15, (d || 30) / 2)){ counted = true; countPlay(curId); }
 });
 
-let seeking = false;
 const sk = $("seek");
 sk.addEventListener("input", () => {
   seeking = true; setFill(sk, sk.value / 10);
@@ -455,10 +582,8 @@ sk.addEventListener("change", () => {
   seeking = false;
 });
 const vl = $("vol");
-vl.addEventListener("input", () => { audio.volume = vl.value / 100; setFill(vl, vl.value);
-  $("volBtn").textContent = vl.value == 0 ? "🔇" : "🔊"; });
+vl.addEventListener("input", () => { audio.volume = vl.value / 100; setFill(vl, vl.value); });
 setFill(vl, 80);
-$("cover").src = PH;
 
 if ("mediaSession" in navigator){
   navigator.mediaSession.setActionHandler("play", () => audio.play());
@@ -466,34 +591,6 @@ if ("mediaSession" in navigator){
   navigator.mediaSession.setActionHandler("nexttrack", next);
   navigator.mediaSession.setActionHandler("previoustrack", prev);
 }
-
-/* ---------- Звёздное небо ---------- */
-(function sky(){
-  const cv = $("sky"), ctx = cv.getContext("2d");
-  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let w, h, stars = [];
-  function size(){
-    const dpr = Math.min(devicePixelRatio || 1, 2);
-    w = cv.width = innerWidth * dpr; h = cv.height = innerHeight * dpr;
-    stars = Array.from({length: 110}, () => ({
-      x: Math.random() * w, y: Math.random() * h, r: (Math.random() * 1.3 + .3) * dpr,
-      s: Math.random() * .25 + .05, a: Math.random() * 6.28
-    }));
-  }
-  function frame(t){
-    ctx.clearRect(0, 0, w, h);
-    for (const s of stars){
-      const a = .45 + .45 * Math.sin(t / 900 + s.a);
-      ctx.fillStyle = `rgba(242,244,255,${still ? .7 : a})`;
-      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.28); ctx.fill();
-      if (!still){ s.y += s.s; if (s.y > h) { s.y = 0; s.x = Math.random() * w; } }
-    }
-    if (!still && !document.hidden) requestAnimationFrame(frame);
-  }
-  addEventListener("resize", size);
-  document.addEventListener("visibilitychange", () => { if (!document.hidden && !still) requestAnimationFrame(frame); });
-  size(); requestAnimationFrame(frame);
-})();
 
 /* ---------- Старт и автообновление ---------- */
 loadAll();
